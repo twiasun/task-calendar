@@ -3,423 +3,732 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026年12月 · 任务日历</title>
+<title>任务日历</title>
 <style>
-  :root{
-    --line:#d8dfe8;
-    --line-soft:#e8eef5;
-    --ink:#1f2937;
-    --muted:#94a3b8;
-    --blue:#2b6cb0;
-    --weekend:#c2410c;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:#eef1f5;
-    color:var(--ink);
-    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
+/* ========== 基础 ========== */
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:#eef1f5;
+  color:#1f2937;
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
 
-  .page{
+/* ========== 工具栏 ========== */
+.toolbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid #d8dfe8;
+  padding:10px 16px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px 14px;
+  align-items:center;
+  font-size:13px;
+}
+.toolbar label{display:flex;align-items:center;gap:5px;color:#475569;white-space:nowrap;}
+.toolbar input[type="month"],
+.toolbar input[type="number"]{
+  font:inherit;
+  padding:4px 8px;
+  border:1px solid #cfd8e3;
+  border-radius:6px;
+  background:#fff;
+  color:#1f2937;
+}
+.toolbar input[type="number"]{width:58px;}
+.toolbar input[type="checkbox"]{width:15px;height:15px;accent-color:#2b6cb0;cursor:pointer;}
+.toolbar button{
+  font:inherit;
+  padding:6px 14px;
+  border-radius:999px;
+  border:1px solid #cfd8e3;
+  background:#fff;
+  color:#2b6cb0;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.toolbar button:hover{background:#f2f7fd;border-color:#a8c4e0;}
+.toolbar button.primary{background:#2b6cb0;color:#fff;border-color:#2b6cb0;}
+.toolbar button.primary:hover{background:#245a94;}
+.toolbar button.danger{color:#b91c1c;border-color:#fecaca;}
+.toolbar button.danger:hover{background:#fef2f2;}
+.toolbar .sep{width:1px;height:22px;background:#d8dfe8;margin:0 2px;}
+.toolbar .status{font-size:12px;color:#94a3b8;margin-left:auto;min-width:100px;text-align:right;}
+.toolbar .status.dirty{color:#c2410c;font-weight:600;}
+
+/* ========== 容器 ========== */
+#calendar{padding:16px 0;}
+
+/* ========== 月份块 ========== */
+.month-block{
+  display:flex;
+  flex-direction:column;
+  gap:1.6mm;
+}
+
+.month-block.page{
+  width:281mm;
+  height:193mm;
+  margin:8mm auto;
+  padding:5mm 7mm;
+  background:#fff;
+  box-shadow:0 6px 24px rgba(15,23,42,.13);
+  overflow:hidden;
+}
+
+.month-block.continuous{
+  max-width:1400px;
+  margin:0 auto 32px;
+  padding:20px 24px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 12px rgba(15,23,42,.08);
+}
+.month-block.continuous .week{flex:0 0 auto;height:90px;}
+.month-block.continuous .day{min-height:0;}
+
+.month-block.page .week{flex:1 1 0;min-height:0;}
+
+/* ========== 页眉 ========== */
+.hd{
+  flex:0 0 auto;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  border-bottom:1.4pt solid #1f2937;
+  padding-bottom:1.4mm;
+}
+.hd h1{font-size:15pt;margin:0;font-weight:800;letter-spacing:.5px;}
+.hd h1 span{font-size:9pt;font-weight:500;color:#94a3b8;margin-left:2mm;letter-spacing:0;}
+.hd .sub{font-size:6.5pt;color:#94a3b8;letter-spacing:.5px;}
+
+/* ========== 月度任务 ========== */
+.month{
+  flex:0 0 26mm;
+  border:1pt solid #c3d4e8;
+  border-radius:1.6mm;
+  background:linear-gradient(180deg,#f5f9fe 0%,#fff 60%);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.month-block.continuous .month{flex:0 0 auto;height:70px;}
+
+/* ========== 通用输入区 ========== */
+.area{
+  width:100%;
+  flex:1 1 auto;
+  min-height:0;
+  border:none;
+  outline:none;
+  resize:none;
+  background:transparent;
+  font-family:inherit;
+  font-size:6.5pt;
+  line-height:4.3mm;
+  padding:0 1.4mm;
+  color:inherit;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 4.1mm,
+    #e9eff5 4.1mm,
+    #e9eff5 4.3mm
+  );
+  background-attachment:local;
+}
+.area:focus{background-color:#fbfdff;box-shadow:inset 0 0 0 1px #bfd7f2;}
+.area::-webkit-scrollbar{width:4px;}
+.area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px;}
+.area::-webkit-scrollbar-track{background:transparent;}
+
+/* ========== 星期表头 ========== */
+.dow{
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:repeat(7,1fr) 46mm;
+  gap:1.4mm;
+  font-size:6.5pt;
+  color:#94a3b8;
+  text-align:center;
+  letter-spacing:1px;
+}
+.dow i{font-style:normal;}
+.dow i:last-child{text-align:left;padding-left:2mm;letter-spacing:0;}
+
+/* ========== 周行 ========== */
+.week{
+  display:grid;
+  grid-template-columns:repeat(7,1fr) 46mm;
+  gap:1.4mm;
+}
+
+/* ========== 单日 ========== */
+.day{
+  border:.6pt solid #d8dfe8;
+  border-radius:1.4mm;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.d-head{
+  flex:0 0 auto;
+  display:flex;
+  align-items:baseline;
+  gap:1.2mm;
+  padding:.9mm 1.4mm .7mm;
+  border-bottom:.5pt solid #e8eef5;
+}
+.d-num{font-size:7.5pt;font-weight:800;letter-spacing:.2px;}
+.d-dow{font-size:5.6pt;color:#a8b3c2;letter-spacing:0;}
+.day .area{
+  padding:0 1.4mm;
+  font-size:6.5pt;
+  line-height:4.3mm;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 4.1mm,
+    #e9eff5 4.1mm,
+    #e9eff5 4.3mm
+  );
+}
+.day.wknd{background:#fdfaf8;}
+.day.wknd .d-num{color:#c2410c;}
+.day.off{background:#f4f6f9;}
+.day.off .d-num{color:#b6c0cc;}
+.day.off .d-dow{color:#c6cfda;}
+.day.today{box-shadow:inset 0 0 0 1.5px #2b6cb0;}
+.day.today .d-num{color:#2b6cb0;}
+
+/* ========== 每周任务 ========== */
+.weektask{
+  border:.6pt solid #c3d4e8;
+  border-radius:1.4mm;
+  background:linear-gradient(180deg,#f5f9fe 0%,#fff 55%);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.w-head{
+  flex:0 0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:.9mm 1.6mm .7mm;
+  border-bottom:.5pt solid #dbe6f3;
+  font-size:7pt;
+  font-weight:800;
+  color:#2b6cb0;
+}
+.w-head small{font-size:5.6pt;font-weight:400;color:#9fb0c4;}
+.weektask .area{
+  padding:0 1.6mm;
+  font-size:6.5pt;
+  line-height:4.3mm;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 4.1mm,
+    #e3ecf6 4.1mm,
+    #e3ecf6 4.3mm
+  );
+}
+
+/* ========== 空状态 ========== */
+.empty-tip{
+  text-align:center;
+  color:#94a3b8;
+  font-size:14px;
+  padding:60px 20px;
+}
+
+/* ========== 打印 ========== */
+@page{size:A4 landscape;margin:8mm;}
+
+@media print{
+  html,body{background:#fff;}
+  .noprint{display:none !important;}
+  #calendar{padding:0;}
+  .month-block.page{
     width:281mm;
     height:193mm;
-    margin:8mm auto;
+    margin:0;
     padding:5mm 7mm;
-    background:#fff;
-    box-shadow:0 6px 24px rgba(15,23,42,.13);
-    display:flex;
-    flex-direction:column;
-    gap:1.6mm;
-    overflow:hidden;
+    box-shadow:none;
+    page-break-after:always;
+    break-after:page;
   }
-
-  /* ============ 页眉 ============ */
-  .hd{
-    flex:0 0 auto;
-    display:flex;
-    align-items:flex-end;
-    justify-content:space-between;
-    border-bottom:1.4pt solid var(--ink);
-    padding-bottom:1.4mm;
+  .month-block.page:last-child{page-break-after:auto;break-after:auto;}
+  .month-block.continuous{
+    box-shadow:none;
+    border-radius:0;
+    padding:0;
+    margin:0 0 10mm;
+    max-width:100%;
   }
-  .hd h1{font-size:15pt;margin:0;font-weight:800;letter-spacing:.5px;}
-  .hd h1 span{font-size:9pt;font-weight:500;color:var(--muted);margin-left:2mm;letter-spacing:0;}
-  .hd .sub{font-size:6.5pt;color:var(--muted);letter-spacing:.5px;}
-
-  /* ============ 月度任务 ============ */
-  .month{
-    flex:0 0 24mm;
-    border:1pt solid #c3d4e8;
-    border-radius:1.6mm;
-    background:linear-gradient(180deg,#f5f9fe 0%,#fff 60%);
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-
-  /* ============ 通用书写区 ============ */
-  .area{
-    flex:1 1 auto;
-    min-height:0;
-    padding:0 2mm;
-    font-size:7pt;
-    line-height:5mm;
-    outline:none;
-    overflow:hidden;
-    white-space:pre-wrap;
-    background-image:repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 4.6mm,
-      #e6ecf3 4.6mm,
-      #e6ecf3 4.85mm
-    );
-  }
-  .area:focus{background-color:#fbfdff;box-shadow:inset 0 0 0 1px #bfd7f2;}
-
-  /* ============ 星期表头 ============ */
-  .dow{
-    flex:0 0 auto;
-    display:grid;
-    grid-template-columns:repeat(7,1fr) 46mm;
-    gap:1.4mm;
-    font-size:6.5pt;
-    color:#94a3b8;
-    text-align:center;
-    letter-spacing:1px;
-  }
-  .dow i{font-style:normal;}
-  .dow i:last-child{text-align:left;padding-left:2mm;letter-spacing:0;}
-
-  /* ============ 周区块 ============ */
-  .week{
-    flex:1 1 0;
-    min-height:0;
-    display:grid;
-    grid-template-columns:repeat(7,1fr) 46mm;
-    gap:1.4mm;
-  }
-
-  /* ---- 单日格 ---- */
-  .day{
-    border:.6pt solid var(--line);
-    border-radius:1.4mm;
-    background:#fff;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-  .d-head{
-    flex:0 0 auto;
-    display:flex;
-    align-items:baseline;
-    gap:1.2mm;
-    padding:.9mm 1.4mm .7mm;
-    border-bottom:.5pt solid var(--line-soft);
-  }
-  .d-num{font-size:7.5pt;font-weight:800;letter-spacing:.2px;}
-  .d-dow{font-size:5.6pt;color:#a8b3c2;letter-spacing:0;}
-  .day .area{
-    padding:0 1.4mm;
-    font-size:6.5pt;
-    line-height:4.3mm;
-    background-image:repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 4.1mm,
-      #e9eff5 4.1mm,
-      #e9eff5 4.3mm
-    );
-  }
-  .day.wknd{background:#fdfaf8;}
-  .day.wknd .d-num{color:var(--weekend);}
-  .day.off{background:#f4f6f9;}
-  .day.off .d-num{color:#b6c0cc;}
-  .day.off .d-dow{color:#c6cfda;}
-
-  /* ---- 每周任务框 ---- */
-  .weektask{
-    border:.6pt solid #c3d4e8;
-    border-radius:1.4mm;
-    background:linear-gradient(180deg,#f5f9fe 0%,#fff 55%);
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-  .w-head{
-    flex:0 0 auto;
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    padding:.9mm 1.6mm .7mm;
-    border-bottom:.5pt solid #dbe6f3;
-    font-size:7pt;
-    font-weight:800;
-    color:var(--blue);
-  }
-  .w-head small{font-size:5.6pt;font-weight:400;color:#9fb0c4;}
-  .weektask .area{
-    padding:0 1.6mm;
-    font-size:6.5pt;
-    line-height:4.3mm;
-    background-image:repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 4.1mm,
-      #e3ecf6 4.1mm,
-      #e3ecf6 4.3mm
-    );
-  }
-
-  /* ============ 按钮 ============ */
-  .toolbar{
-    position:fixed;
-    right:16px;
-    bottom:16px;
-    display:flex;
-    gap:8px;
-    z-index:99;
-  }
-  .toolbar button{
-    font:inherit;
-    font-size:13px;
-    padding:9px 18px;
-    border-radius:999px;
-    border:1px solid #cfd8e3;
-    background:#fff;
-    color:#2b6cb0;
-    cursor:pointer;
-    box-shadow:0 2px 10px rgba(15,23,42,.12);
-  }
-  .toolbar button:hover{background:#f2f7fd;}
-
-  /* ============ 打印 ============ */
-  @page{size:A4 landscape;margin:8mm;}
-
-  @media print{
-    html,body{background:#fff;}
-    .page{
-      width:281mm;
-      height:193mm;
-      margin:0;
-      padding:0;
-      box-shadow:none;
-    }
-    .noprint{display:none !important;}
-    .area:focus{box-shadow:none;background-color:transparent;}
-  }
+  .month-block.continuous .week{height:auto;min-height:80px;}
+  .area:focus{box-shadow:none;background-color:transparent;}
+  .area::-webkit-scrollbar{display:none;}
+}
 </style>
 </head>
 <body>
 
-<div class="page">
-
-  <!-- 页眉 -->
-  <div class="hd">
-    <h1>2026 年 12 月<span>任务日历</span></h1>
-    <div class="sub">每日任务 · 每周任务 · 每月任务</div>
-  </div>
-
-  <!-- 月度任务 -->
-  <div class="month">
-    <div class="w-head"><span>本月任务 / 月度目标</span><small>MONTHLY</small></div>
-    <div class="area" contenteditable="true"></div>
-  </div>
-
-  <!-- 星期表头 -->
-  <div class="dow">
-    <i>周一</i><i>周二</i><i>周三</i><i>周四</i><i>周五</i><i>周六</i><i>周日</i><i>本周任务</i>
-  </div>
-
-  <!-- ===== 第 1 周 ===== -->
-  <div class="week">
-    <div class="day off">
-      <div class="d-head"><span class="d-num">11/30</span><span class="d-dow">周一</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/1</span><span class="d-dow">周二</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/2</span><span class="d-dow">周三</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/3</span><span class="d-dow">周四</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/4</span><span class="d-dow">周五</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/5</span><span class="d-dow">周六</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/6</span><span class="d-dow">周日</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="weektask">
-      <div class="w-head"><span>第 1 周任务</span><small>12/1 – 12/6</small></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-  </div>
-
-  <!-- ===== 第 2 周 ===== -->
-  <div class="week">
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/7</span><span class="d-dow">周一</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/8</span><span class="d-dow">周二</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/9</span><span class="d-dow">周三</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/10</span><span class="d-dow">周四</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/11</span><span class="d-dow">周五</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/12</span><span class="d-dow">周六</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/13</span><span class="d-dow">周日</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="weektask">
-      <div class="w-head"><span>第 2 周任务</span><small>12/7 – 12/13</small></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-  </div>
-
-  <!-- ===== 第 3 周 ===== -->
-  <div class="week">
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/14</span><span class="d-dow">周一</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/15</span><span class="d-dow">周二</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/16</span><span class="d-dow">周三</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/17</span><span class="d-dow">周四</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/18</span><span class="d-dow">周五</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/19</span><span class="d-dow">周六</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/20</span><span class="d-dow">周日</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="weektask">
-      <div class="w-head"><span>第 3 周任务</span><small>12/14 – 12/20</small></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-  </div>
-
-  <!-- ===== 第 4 周 ===== -->
-  <div class="week">
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/21</span><span class="d-dow">周一</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/22</span><span class="d-dow">周二</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/23</span><span class="d-dow">周三</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/24</span><span class="d-dow">周四</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/25</span><span class="d-dow">周五</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/26</span><span class="d-dow">周六</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day wknd">
-      <div class="d-head"><span class="d-num">12/27</span><span class="d-dow">周日</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="weektask">
-      <div class="w-head"><span>第 4 周任务</span><small>12/21 – 12/27</small></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-  </div>
-
-  <!-- ===== 第 5 周 ===== -->
-  <div class="week">
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/28</span><span class="d-dow">周一</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/29</span><span class="d-dow">周二</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/30</span><span class="d-dow">周三</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day">
-      <div class="d-head"><span class="d-num">12/31</span><span class="d-dow">周四</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day off">
-      <div class="d-head"><span class="d-num">1/1</span><span class="d-dow">周五</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day off">
-      <div class="d-head"><span class="d-num">1/2</span><span class="d-dow">周六</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="day off">
-      <div class="d-head"><span class="d-num">1/3</span><span class="d-dow">周日</span></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-    <div class="weektask">
-      <div class="w-head"><span>第 5 周任务</span><small>12/28 – 1/3</small></div>
-      <div class="area" contenteditable="true"></div>
-    </div>
-  </div>
-
-</div>
-
-<!-- 浮动按钮（打印时自动隐藏） -->
+<!-- ========== 工具栏 ========== -->
 <div class="toolbar noprint">
-  <button onclick="window.print()">🖨 打印 / 导出 PDF</button>
+  <label>起始月份
+    <input type="month" id="startMonth">
+  </label>
+  <label>显示
+    <input type="number" id="numMonths" min="1" max="24" value="1">
+    个月
+  </label>
+  <span class="sep"></span>
+  <label>
+    <input type="checkbox" id="continuous">
+    连续滚动
+  </label>
+  <label>
+    <input type="checkbox" id="mergeMode">
+    合并周（每页 4–5 周）
+  </label>
+  <span class="sep"></span>
+  <button id="btnSave" class="primary">保存数据</button>
+  <button id="btnClearSession">清空本次填写</button>
+  <button id="btnClearAll" class="danger">清空全部</button>
+  <button id="btnPrint">打印 / 导出 PDF</button>
+  <span class="status" id="status"></span>
 </div>
 
+<!-- ========== 日历容器 ========== -->
+<div id="calendar"></div>
+
+<script>
+/* ============================================================
+   常量
+   ============================================================ */
+const STORAGE_KEY = 'taskCalendar_v3';
+const DOW_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
+
+/* ============================================================
+   状态
+   ============================================================ */
+const state = {
+  startYear: 2026,
+  startMonth: 12,
+  monthsToShow: 1,
+  continuous: false,
+  mergeMode: false,
+  data: { daily:{}, weekly:{}, monthly:{} },
+  savedSnapshot: null,
+  dirty: false,
+};
+
+/* ============================================================
+   工具函数
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const pad2 = n => String(n).padStart(2,'0');
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+
+function monthKey(y, m) {
+  return `${y}-${pad2(m)}`;
+}
+
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+
+function startOfWeek(d) {
+  const r = new Date(d);
+  r.setHours(0,0,0,0);
+  const day = r.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  r.setDate(r.getDate() + diff);
+  return r;
+}
+
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
+function fmtShort(d) {
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+/* ============================================================
+   数据持久化
+   ============================================================ */
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { daily:{}, weekly:{}, monthly:{} };
+    const d = JSON.parse(raw);
+    return {
+      daily:   d.daily   || {},
+      weekly:  d.weekly  || {},
+      monthly: d.monthly || {},
+    };
+  } catch(e) {
+    return { daily:{}, weekly:{}, monthly:{} };
+  }
+}
+
+function persistData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+}
+
+/* ============================================================
+   状态更新
+   ============================================================ */
+function markDirty() {
+  state.dirty = true;
+  updateStatus();
+}
+
+function updateStatus() {
+  const s = $('#status');
+  if (!s) return;
+  if (state.dirty) {
+    s.textContent = '● 有未保存的修改';
+    s.className = 'status dirty';
+  } else {
+    s.textContent = '✓ 已保存';
+    s.className = 'status';
+  }
+}
+
+/* ============================================================
+   周计算
+   ============================================================ */
+function getMonthWeeks(year, month, mergeMode) {
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDay  = new Date(year, month, 0);
+
+  const start         = startOfWeek(firstDay);
+  const lastWeekStart = startOfWeek(lastDay);
+
+  const weeks = [];
+  let cur = new Date(start);
+
+  while (cur <= lastWeekStart) {
+    let daysInMonth = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(cur, i);
+      if (d.getFullYear() === year && d.getMonth() === month - 1) {
+        daysInMonth++;
+      }
+    }
+    weeks.push({ start: new Date(cur), daysInMonth });
+    cur = addDays(cur, 7);
+  }
+
+  if (mergeMode) {
+    return weeks.filter(w => w.daysInMonth >= 4);
+  }
+  return weeks;
+}
+
+/* ============================================================
+   输入区创建
+   ============================================================ */
+function makeArea(value, key, type, onInput) {
+  const ta = document.createElement('textarea');
+  ta.className = 'area';
+  ta.value = value || '';
+  ta.spellcheck = false;
+  ta.dataset.key = key;
+  ta.dataset.type = type;
+
+  ta.addEventListener('input', () => {
+    onInput(ta.value);
+    markDirty();
+    syncSameKey(key, ta.value, ta);
+  });
+
+  return ta;
+}
+
+/* 同步同一 key 的多个输入框（跨月重复出现时） */
+function syncSameKey(key, value, excludeEl) {
+  document.querySelectorAll(`[data-key="${key}"]`).forEach(ta => {
+    if (ta !== excludeEl && ta.value !== value) {
+      ta.value = value;
+    }
+  });
+}
+
+/* ============================================================
+   渲染
+   ============================================================ */
+function render() {
+  const container = $('#calendar');
+  container.innerHTML = '';
+
+  if (state.monthsToShow < 1) {
+    container.innerHTML = '<div class="empty-tip">请选择要显示的月份数量</div>';
+    return;
+  }
+
+  for (let i = 0; i < state.monthsToShow; i++) {
+    const d = new Date(state.startYear, state.startMonth - 1 + i, 1);
+    container.appendChild(renderMonth(d.getFullYear(), d.getMonth() + 1));
+  }
+
+  updateStatus();
+}
+
+function renderMonth(year, month) {
+  const block = el('div', 'month-block ' + (state.continuous ? 'continuous' : 'page'));
+
+  /* --- 页眉 --- */
+  const hd = el('div', 'hd');
+  const h1 = el('h1', null, `${year} 年 ${month} 月`);
+  h1.appendChild(el('span', null, '任务日历'));
+  hd.appendChild(h1);
+  hd.appendChild(el('div', 'sub', '每日任务 · 每周任务 · 每月任务'));
+  block.appendChild(hd);
+
+  /* --- 月度任务 --- */
+  const mKey = monthKey(year, month);
+  const monthBox = el('div', 'month');
+  const mHead = el('div', 'w-head');
+  const mTitle = el('span', null, '本月任务 / 月度目标');
+  const mTag = el('small', null, 'MONTHLY');
+  mHead.appendChild(mTitle);
+  mHead.appendChild(mTag);
+  monthBox.appendChild(mHead);
+
+  const monthArea = makeArea(
+    state.data.monthly[mKey] || '',
+    mKey,
+    'monthly',
+    v => { state.data.monthly[mKey] = v; }
+  );
+  monthBox.appendChild(monthArea);
+  block.appendChild(monthBox);
+
+  /* --- 星期表头 --- */
+  const dow = el('div', 'dow');
+  DOW_NAMES.forEach(n => dow.appendChild(el('i', null, n)));
+  dow.appendChild(el('i', null, '本周任务'));
+  block.appendChild(dow);
+
+  /* --- 周行 --- */
+  const weeks = getMonthWeeks(year, month, state.mergeMode);
+  if (weeks.length === 0) {
+    const tip = el('div', 'empty-tip', '本月没有符合条件的周');
+    block.appendChild(tip);
+  } else {
+    weeks.forEach(w => {
+      block.appendChild(renderWeek(w.start, year, month));
+    });
+  }
+
+  return block;
+}
+
+function renderWeek(weekStart, year, month) {
+  const row = el('div', 'week');
+
+  /* 7 天 */
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(weekStart, i);
+    row.appendChild(renderDay(date, year, month));
+  }
+
+  /* 每周任务 */
+  const wKey = dateKey(weekStart);
+  const wt = el('div', 'weektask');
+
+  const wh = el('div', 'w-head');
+  wh.appendChild(el('span', null, '本周任务'));
+  const wkEnd = addDays(weekStart, 6);
+  wh.appendChild(el('small', null, `${fmtShort(weekStart)} – ${fmtShort(wkEnd)}`));
+  wt.appendChild(wh);
+
+  const wArea = makeArea(
+    state.data.weekly[wKey] || '',
+    wKey,
+    'weekly',
+    v => { state.data.weekly[wKey] = v; }
+  );
+  wt.appendChild(wArea);
+
+  row.appendChild(wt);
+  return row;
+}
+
+function renderDay(date, year, month) {
+  const isOther  = date.getMonth() !== month - 1 || date.getFullYear() !== year;
+  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+  const isToday  = isSameDay(date, new Date());
+
+  const cell = el('div', 'day');
+  if (isWeekend) cell.classList.add('wknd');
+  if (isOther)   cell.classList.add('off');
+  if (isToday)   cell.classList.add('today');
+
+  /* 头部 */
+  const head = el('div', 'd-head');
+  head.appendChild(el('span', 'd-num', `${date.getMonth()+1}/${date.getDate()}`));
+  head.appendChild(el('span', 'd-dow', DOW_NAMES[(date.getDay()+6)%7]));
+  cell.appendChild(head);
+
+  /* 每日输入 */
+  const k = dateKey(date);
+  const ta = makeArea(
+    state.data.daily[k] || '',
+    k,
+    'daily',
+    v => { state.data.daily[k] = v; }
+  );
+  cell.appendChild(ta);
+
+  return cell;
+}
+
+/* ============================================================
+   按钮操作
+   ============================================================ */
+function doSave() {
+  persistData();
+  state.savedSnapshot = JSON.stringify(state.data);
+  state.dirty = false;
+  updateStatus();
+
+  /* 轻提示 */
+  const btn = $('#btnSave');
+  const old = btn.textContent;
+  btn.textContent = '✓ 已保存';
+  setTimeout(() => { btn.textContent = old; }, 1200);
+}
+
+function clearSession() {
+  if (state.dirty) {
+    if (!confirm('确定要丢弃未保存的修改，恢复到上次保存的状态吗？')) return;
+  }
+  state.data = JSON.parse(state.savedSnapshot || '{"daily":{},"weekly":{},"monthly":{}}');
+  state.dirty = false;
+  render();
+  updateStatus();
+}
+
+function clearAll() {
+  if (!confirm('确定要清空全部填写内容吗？\n\n此操作会删除浏览器中保存的所有任务数据，且不可恢复。')) return;
+  state.data = { daily:{}, weekly:{}, monthly:{} };
+  localStorage.removeItem(STORAGE_KEY);
+  state.savedSnapshot = JSON.stringify(state.data);
+  state.dirty = false;
+  render();
+  updateStatus();
+}
+
+/* ============================================================
+   事件绑定
+   ============================================================ */
+function bindEvents() {
+  /* 起始月份 */
+  $('#startMonth').addEventListener('change', e => {
+    const v = e.target.value;
+    if (!v) return;
+    const [y, m] = v.split('-').map(Number);
+    state.startYear = y;
+    state.startMonth = m;
+    render();
+  });
+
+  /* 显示月数 */
+  $('#numMonths').addEventListener('change', e => {
+    let n = parseInt(e.target.value, 10) || 1;
+    n = Math.max(1, Math.min(24, n));
+    e.target.value = n;
+    state.monthsToShow = n;
+    render();
+  });
+
+  /* 连续滚动 */
+  $('#continuous').addEventListener('change', e => {
+    state.continuous = e.target.checked;
+    render();
+  });
+
+  /* 合并周 */
+  $('#mergeMode').addEventListener('change', e => {
+    state.mergeMode = e.target.checked;
+    render();
+  });
+
+  /* 按钮 */
+  $('#btnSave').addEventListener('click', doSave);
+  $('#btnClearSession').addEventListener('click', clearSession);
+  $('#btnClearAll').addEventListener('click', clearAll);
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  /* Ctrl / Cmd + S 保存 */
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      doSave();
+    }
+  });
+
+  /* 离开前提醒 */
+  window.addEventListener('beforeunload', e => {
+    if (state.dirty) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+}
+
+/* ============================================================
+   初始化
+   ============================================================ */
+function init() {
+  const loaded = loadData();
+  state.data = loaded;
+  state.savedSnapshot = JSON.stringify(loaded);
+  state.dirty = false;
+
+  const now = new Date();
+  state.startYear = now.getFullYear();
+  state.startMonth = now.getMonth() + 1;
+  $('#startMonth').value = `${state.startYear}-${pad2(state.startMonth)}`;
+  $('#numMonths').value = 1;
+
+  bindEvents();
+  render();
+  updateStatus();
+}
+
+init();
+</script>
 </body>
 </html>
