@@ -5,13 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>任务日历</title>
 <style>
+/* ========== 根变量 ========== */
+:root{
+  --font-ui: "PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --font-input: "PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --fs-scale: 1;
+}
+
 /* ========== 基础 ========== */
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
   background:#eef1f5;
   color:#1f2937;
-  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  font-family:var(--font-ui);
   -webkit-print-color-adjust:exact;
   print-color-adjust:exact;
 }
@@ -24,27 +31,30 @@ body{
   background:rgba(255,255,255,.96);
   backdrop-filter:blur(12px);
   border-bottom:1px solid #d8dfe8;
-  padding:8px 14px;
+  padding:7px 14px;
   display:flex;
   flex-wrap:wrap;
-  gap:8px 0;
+  gap:6px 0;
   align-items:center;
-  font-size:12.5px;
+  font-size:12px;
+  max-height:130px;
+  overflow-y:auto;
 }
 .tb-group{
   display:flex;
   flex-wrap:wrap;
-  gap:8px 12px;
+  gap:6px 11px;
   align-items:center;
-  padding:0 14px;
+  padding:0 12px;
   border-right:1px solid #e8eef5;
 }
 .tb-group:last-child{border-right:none;padding-right:0;}
 .tb-title{
   font-weight:700;
   color:#2b6cb0;
-  font-size:11.5px;
+  font-size:11px;
   letter-spacing:.3px;
+  white-space:nowrap;
 }
 .toolbar label{display:flex;align-items:center;gap:4px;color:#475569;white-space:nowrap;}
 .toolbar input[type="month"],
@@ -52,19 +62,19 @@ body{
 .toolbar input[type="text"],
 .toolbar select{
   font:inherit;
-  font-size:12px;
-  padding:4px 7px;
+  font-size:11.5px;
+  padding:3px 6px;
   border:1px solid #cfd8e3;
   border-radius:6px;
   background:#fff;
   color:#1f2937;
 }
-.toolbar input[type="number"]{width:52px;}
+.toolbar input[type="number"]{width:50px;}
 .toolbar input[type="checkbox"]{width:14px;height:14px;accent-color:#2b6cb0;cursor:pointer;}
 .toolbar button{
   font:inherit;
-  font-size:12.5px;
-  padding:5px 13px;
+  font-size:12px;
+  padding:4px 12px;
   border-radius:999px;
   border:1px solid #cfd8e3;
   background:#fff;
@@ -78,14 +88,9 @@ body{
 .toolbar button.primary:hover{background:#245a94;}
 .toolbar button.danger{color:#b91c1c;border-color:#fecaca;}
 .toolbar button.danger:hover{background:#fef2f2;}
-.toolbar button.fmt{
-  width:32px;padding:5px 0;text-align:center;font-weight:700;
-  border-radius:7px;
-}
-.toolbar button.fmt.italic{font-style:italic;font-weight:500;}
-.toolbar .status{font-size:11.5px;color:#94a3b8;min-width:110px;text-align:right;}
+.toolbar .status{font-size:11px;color:#94a3b8;min-width:100px;text-align:right;}
 .toolbar .status.dirty{color:#c2410c;font-weight:600;}
-.toolbar .hint{font-size:11px;color:#b0bccb;}
+.toolbar .hint{font-size:10.5px;color:#b0bccb;}
 
 /* ========== 容器 ========== */
 #calendar{padding:16px 0;}
@@ -113,7 +118,7 @@ body{
   border-radius:12px;
   box-shadow:0 2px 12px rgba(15,23,42,.08);
 }
-.month-block.continuous .week{flex:0 0 auto;height:92px;}
+.month-block.continuous .week{flex:0 0 auto;min-height:92px;}
 .month-block.page .week{flex:1 1 0;min-height:0;}
 
 /* ========== 页眉 ========== */
@@ -125,9 +130,9 @@ body{
   border-bottom:1.4pt solid #1f2937;
   padding-bottom:1.4mm;
 }
-.hd h1{font-size:15pt;margin:0;font-weight:800;letter-spacing:.5px;}
-.hd h1 span{font-size:9pt;font-weight:500;color:#94a3b8;margin-left:2mm;letter-spacing:0;}
-.hd .sub{font-size:6.5pt;color:#94a3b8;letter-spacing:.5px;}
+.hd h1{font-size:calc(15pt * var(--fs-scale));margin:0;font-weight:800;letter-spacing:.5px;}
+.hd h1 span{font-size:calc(9pt * var(--fs-scale));font-weight:500;color:#94a3b8;margin-left:2mm;letter-spacing:0;}
+.hd .sub{font-size:calc(6.5pt * var(--fs-scale));color:#94a3b8;letter-spacing:.5px;}
 
 /* ========== 月度任务 ========== */
 .month{
@@ -162,9 +167,9 @@ body{
   border:none;
   outline:none;
   background:transparent;
-  font-family:inherit;
-  font-size:6.5pt;
-  line-height:4.3mm;
+  font-family:var(--font-input);
+  font-size:calc(6.5pt * var(--fs-scale));
+  line-height:calc(4.3mm * var(--fs-scale));
   padding:0 1.6mm;
   color:inherit;
   overflow:auto;
@@ -173,13 +178,13 @@ body{
   background-image:repeating-linear-gradient(
     to bottom,
     transparent 0,
-    transparent 4.1mm,
-    #e3ecf6 4.1mm,
-    #e3ecf6 4.3mm
+    transparent calc(4.1mm * var(--fs-scale)),
+    #e3ecf6 calc(4.1mm * var(--fs-scale)),
+    #e3ecf6 calc(4.3mm * var(--fs-scale))
   );
   background-attachment:local;
   cursor:text;
-  min-height:4.3mm;
+  min-height:calc(4.3mm * var(--fs-scale));
   box-sizing:border-box;
   border-radius:0 0 1.2mm 1.2mm;
 }
@@ -190,19 +195,19 @@ body{
 .area::-webkit-scrollbar-track{background:transparent;}
 .area b,.area strong{font-weight:700;}
 .area i,.area em{font-style:italic;}
+.area span{font-size:inherit;}
+.area span[style*="font-size"]{line-height:1.35;}
 
-/* 每日 / 每周 输入区（保持原样式） */
+/* 每日 / 每周 输入区 */
 .day .area,
 .weektask .area{
   padding:0 1.4mm;
-  font-size:6.5pt;
-  line-height:4.3mm;
   background-image:repeating-linear-gradient(
     to bottom,
     transparent 0,
-    transparent 4.1mm,
-    #e9eff5 4.1mm,
-    #e9eff5 4.3mm
+    transparent calc(4.1mm * var(--fs-scale)),
+    #e9eff5 calc(4.1mm * var(--fs-scale)),
+    #e9eff5 calc(4.3mm * var(--fs-scale))
   );
 }
 
@@ -212,7 +217,7 @@ body{
   display:grid;
   grid-template-columns:repeat(7,1fr) 46mm;
   gap:1.4mm;
-  font-size:6.5pt;
+  font-size:calc(6.5pt * var(--fs-scale));
   color:#94a3b8;
   text-align:center;
   letter-spacing:1px;
@@ -244,8 +249,8 @@ body{
   padding:.9mm 1.4mm .7mm;
   border-bottom:.5pt solid #e8eef5;
 }
-.d-num{font-size:7.5pt;font-weight:800;letter-spacing:.2px;}
-.d-dow{font-size:5.6pt;color:#a8b3c2;letter-spacing:0;}
+.d-num{font-size:calc(7.5pt * var(--fs-scale));font-weight:800;letter-spacing:.2px;}
+.d-dow{font-size:calc(5.6pt * var(--fs-scale));color:#a8b3c2;letter-spacing:0;}
 .day.wknd{background:#fdfaf8;}
 .day.wknd .d-num{color:#c2410c;}
 .day.off{background:#f4f6f9;}
@@ -270,11 +275,11 @@ body{
   align-items:baseline;
   padding:.9mm 1.6mm .7mm;
   border-bottom:.5pt solid #dbe6f3;
-  font-size:7pt;
+  font-size:calc(7pt * var(--fs-scale));
   font-weight:800;
   color:#2b6cb0;
 }
-.w-head small{font-size:5.6pt;font-weight:400;color:#9fb0c4;}
+.w-head small{font-size:calc(5.6pt * var(--fs-scale));font-weight:400;color:#9fb0c4;}
 
 /* ========== 空状态 ========== */
 .empty-tip{
@@ -308,7 +313,7 @@ body{
     margin:0 0 10mm;
     max-width:100%;
   }
-  .month-block.continuous .week{height:auto;min-height:80px;}
+  .month-block.continuous .week{min-height:80px;}
   .area:focus{box-shadow:none;background-color:transparent;}
   .area::-webkit-scrollbar{display:none;}
 }
@@ -354,40 +359,45 @@ body{
     <label id="showColLinesWrap" style="display:none">
       <input type="checkbox" id="showColLines"> 分栏竖线
     </label>
-    <label>
-      <input type="checkbox" id="dynamicHeight" checked> 动态高度
-    </label>
+    <label><input type="checkbox" id="monthlyDynamicHeight" checked> 动态高度</label>
+  </div>
+
+  <!-- 每日 -->
+  <div class="tb-group">
+    <span class="tb-title">每日目标</span>
+    <label><input type="checkbox" id="dailyDynamicHeight"> 动态高度</label>
   </div>
 
   <!-- 字体 -->
   <div class="tb-group">
     <span class="tb-title">字体</span>
-    <input type="text" id="fontFamily" list="fontList" placeholder="默认字体" style="width:130px;">
-    <datalist id="fontList">
-      <option value="PingFang SC">苹方</option>
-      <option value="Microsoft YaHei">微软雅黑</option>
-      <option value="Microsoft JhengHei">微软正黑体</option>
-      <option value="SimSun">宋体</option>
-      <option value="SimHei">黑体</option>
-      <option value="KaiTi">楷体</option>
-      <option value="FangSong">仿宋</option>
-      <option value="STSong">华文宋体</option>
-      <option value="STKaiti">华文楷体</option>
-      <option value="STHeiti">华文黑体</option>
-      <option value="Noto Sans SC">Noto Sans SC</option>
-      <option value="Noto Serif SC">Noto Serif SC</option>
-      <option value="Source Han Sans SC">思源黑体</option>
-      <option value="Source Han Serif SC">思源宋体</option>
-      <option value="WenQuanYi Micro Hei">文泉驿微米黑</option>
-      <option value="Arial">Arial</option>
-      <option value="Helvetica">Helvetica</option>
-      <option value="Georgia">Georgia</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Courier New">Courier New</option>
-    </datalist>
-    <button type="button" id="btnBold" class="fmt" title="加粗（选中文字后按 Ctrl+B）">B</button>
-    <button type="button" id="btnItalic" class="fmt italic" title="斜体（选中文字后按 Ctrl+I）">I</button>
-    <span class="hint">选中文字后 Ctrl+B / Ctrl+I</span>
+    <label>范围
+      <select id="fontScope">
+        <option value="global">全局</option>
+        <option value="ui">仅界面</option>
+        <option value="input">仅输入</option>
+      </select>
+    </label>
+    <label>中文
+      <input type="text" id="fontCN" list="fontList" placeholder="默认" style="width:88px;">
+    </label>
+    <label>英文
+      <input type="text" id="fontEN" list="fontList" placeholder="默认" style="width:88px;">
+    </label>
+    <label>字号
+      <input type="number" id="fontScale" min="50" max="200" step="5" value="100" style="width:52px;">%
+    </label>
+    <label>局部字号
+      <select id="localFontSizeSel">
+        <option value="">选中文字…</option>
+        <option value="4">很小 4pt</option>
+        <option value="5">小 5pt</option>
+        <option value="6.5">标准 6.5pt</option>
+        <option value="8">大 8pt</option>
+        <option value="10">特大 10pt</option>
+        <option value="12">超大 12pt</option>
+      </select>
+    </label>
   </div>
 
   <!-- 操作 -->
@@ -401,6 +411,33 @@ body{
 
 </div>
 
+<!-- 字体候选 -->
+<datalist id="fontList">
+  <option value="PingFang SC">苹方</option>
+  <option value="Microsoft YaHei">微软雅黑</option>
+  <option value="Microsoft JhengHei">微软正黑体</option>
+  <option value="SimSun">宋体</option>
+  <option value="SimHei">黑体</option>
+  <option value="KaiTi">楷体</option>
+  <option value="FangSong">仿宋</option>
+  <option value="STSong">华文宋体</option>
+  <option value="STKaiti">华文楷体</option>
+  <option value="STHeiti">华文黑体</option>
+  <option value="Noto Sans SC">Noto Sans SC</option>
+  <option value="Noto Serif SC">Noto Serif SC</option>
+  <option value="Source Han Sans SC">思源黑体</option>
+  <option value="Source Han Serif SC">思源宋体</option>
+  <option value="WenQuanYi Micro Hei">文泉驿微米黑</option>
+  <option value="Arial">Arial</option>
+  <option value="Helvetica">Helvetica</option>
+  <option value="Georgia">Georgia</option>
+  <option value="Times New Roman">Times New Roman</option>
+  <option value="Courier New">Courier New</option>
+  <option value="Consolas">Consolas</option>
+  <option value="Verdana">Verdana</option>
+  <option value="Tahoma">Tahoma</option>
+</datalist>
+
 <!-- ========== 日历容器 ========== -->
 <div id="calendar"></div>
 
@@ -408,18 +445,24 @@ body{
 /* ============================================================
    常量
    ============================================================ */
-const STORAGE_KEY = 'taskCalendar_v5';
+const STORAGE_KEY = 'taskCalendar_v6';
 const DOW_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
 
+const DEFAULT_STACK = '"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif';
+
 const DEFAULT_LAYOUT = {
-  mode: 'single',          // single | equal | ratio
+  mode: 'single',                  // single | equal | ratio
   equalCount: 2,
   ratioA: 1,
   ratioB: 1,
-  bg: 'lines',             // lines | blank
-  dynamicHeight: true,     // 月度目标动态高度
-  showColLines: false,     // 分栏竖线
-  fontFamily: '',          // 本地字体
+  bg: 'lines',                     // lines | blank
+  monthlyDynamicHeight: true,      // 月度目标动态高度
+  dailyDynamicHeight: false,       // 每日目标动态高度
+  showColLines: false,             // 分栏竖线
+  fontScope: 'global',             // global | ui | input
+  fontCN: '',                      // 中文字体
+  fontEN: '',                      // 英文字体
+  fontScale: 100,                  // 全局字号缩放（%）
 };
 
 /* ============================================================
@@ -495,7 +538,7 @@ function getLayoutConfig() {
 }
 
 /* ============================================================
-   月度目标内容读写（多栏数组）
+   月度目标内容读写
    ============================================================ */
 function getMonthlySlot(mKey, i) {
   const v = state.data.monthly[mKey];
@@ -522,11 +565,16 @@ function loadAll() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const d = JSON.parse(raw);
+    const layout = Object.assign({}, DEFAULT_LAYOUT, d.layout || {});
+    /* 兼容旧字段 */
+    if (d.layout && 'dynamicHeight' in d.layout && !('monthlyDynamicHeight' in d.layout)) {
+      layout.monthlyDynamicHeight = !!d.layout.dynamicHeight;
+    }
     return {
       daily:   d.daily   || {},
       weekly:  d.weekly  || {},
       monthly: d.monthly || {},
-      layout:  Object.assign({}, DEFAULT_LAYOUT, d.layout || {}),
+      layout:  layout,
     };
   } catch (e) {
     return null;
@@ -564,16 +612,41 @@ function updateStatus() {
 }
 
 /* ============================================================
-   字体
+   字体应用
    ============================================================ */
-function applyFont() {
-  const f = (state.layout.fontFamily || '').trim();
-  if (f) {
-    document.body.style.fontFamily =
-      `"${f}", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC", system-ui, -apple-system, sans-serif`;
+function buildFontStack() {
+  const L = state.layout;
+  const parts = [];
+  if (L.fontEN) parts.push(`"${L.fontEN.trim()}"`);
+  if (L.fontCN) parts.push(`"${L.fontCN.trim()}"`);
+  parts.push('"PingFang SC"','"Microsoft YaHei"','"Hiragino Sans GB"','"Noto Sans SC"','system-ui','-apple-system','sans-serif');
+  return parts.join(',');
+}
+
+function applyFonts() {
+  const L = state.layout;
+  const root = document.documentElement;
+  const stack = buildFontStack();
+  const hasCustom = !!(L.fontCN || L.fontEN);
+
+  if (!hasCustom) {
+    root.style.setProperty('--font-ui', DEFAULT_STACK);
+    root.style.setProperty('--font-input', DEFAULT_STACK);
+  } else if (L.fontScope === 'ui') {
+    root.style.setProperty('--font-ui', stack);
+    root.style.setProperty('--font-input', DEFAULT_STACK);
+  } else if (L.fontScope === 'input') {
+    root.style.setProperty('--font-input', stack);
+    root.style.setProperty('--font-ui', DEFAULT_STACK);
   } else {
-    document.body.style.fontFamily = '';
+    root.style.setProperty('--font-ui', stack);
+    root.style.setProperty('--font-input', stack);
   }
+
+  let scale = parseFloat(L.fontScale);
+  if (!isFinite(scale)) scale = 100;
+  scale = Math.max(50, Math.min(200, scale)) / 100;
+  root.style.setProperty('--fs-scale', scale);
 }
 
 /* ============================================================
@@ -604,7 +677,7 @@ function getMonthWeeks(year, month, mergeMode) {
 }
 
 /* ============================================================
-   输入区：读取 / 写入
+   输入区
    ============================================================ */
 function readEditable(elm) {
   const txt = (elm.textContent || '').replace(/\u200B/g, '').trim();
@@ -621,15 +694,14 @@ function makeArea(value, key, type, onInput) {
   elm.dataset.type = type;
   if (value) elm.innerHTML = value;
 
-  /* 输入 → 保存 */
   elm.addEventListener('input', () => {
     onInput(readEditable(elm));
     markDirty();
     syncSameKey(key, elm.innerHTML, elm);
-    if (type === 'monthly' && state.layout.dynamicHeight) fitMonthlyHeights();
+    if (type === 'monthly' && state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+    if (type === 'daily'   && state.layout.dailyDynamicHeight)   fitDailyHeights();
   });
 
-  /* 回车统一为 <br>，避免高度计算差异 */
   elm.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -637,7 +709,6 @@ function makeArea(value, key, type, onInput) {
     }
   });
 
-  /* 粘贴纯文本，避免带入外部样式 */
   elm.addEventListener('paste', e => {
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text/plain');
@@ -654,7 +725,7 @@ function syncSameKey(key, html, excludeEl) {
 }
 
 /* ============================================================
-   动态高度：月度目标 1–3 行（仅 dynamic 模式）
+   动态高度：月度目标（1–3 行，全栏统一）
    ============================================================ */
 function fitMonthlyHeights() {
   document.querySelectorAll('.month.dynamic').forEach(box => {
@@ -692,6 +763,54 @@ function fitMonthlyHeights() {
 }
 
 /* ============================================================
+   动态高度：每日目标（1–3 行，每周统一）
+   ============================================================ */
+function fitDailyHeights() {
+  document.querySelectorAll('.week').forEach(weekRow => {
+    const areas = weekRow.querySelectorAll('.day .area');
+    if (!areas.length) return;
+
+    let maxLines = 1;
+
+    areas.forEach(ta => {
+      const cs   = getComputedStyle(ta);
+      const lh   = parseFloat(cs.lineHeight) || 16;
+      const padT = parseFloat(cs.paddingTop) || 0;
+      const padB = parseFloat(cs.paddingBottom) || 0;
+
+      const prevH  = ta.style.height;
+      const prevOv = ta.style.overflow;
+
+      ta.style.height   = '0px';
+      ta.style.overflow = 'hidden';
+      const sh = ta.scrollHeight;
+      ta.style.height   = prevH;
+      ta.style.overflow = prevOv;
+
+      const textH = Math.max(0, sh - padT - padB);
+      let lines = Math.round(textH / lh);
+      if (!isFinite(lines) || lines < 1) lines = 1;
+      if (lines > 3) lines = 3;
+      if (lines > maxLines) maxLines = lines;
+    });
+
+    areas.forEach(ta => {
+      const cs   = getComputedStyle(ta);
+      const lh   = parseFloat(cs.lineHeight) || 16;
+      const padT = parseFloat(cs.paddingTop) || 0;
+      const padB = parseFloat(cs.paddingBottom) || 0;
+      ta.style.height = (maxLines * lh + padT + padB) + 'px';
+    });
+  });
+}
+
+function clearDailyHeights() {
+  document.querySelectorAll('.day .area').forEach(ta => {
+    ta.style.height = '';
+  });
+}
+
+/* ============================================================
    渲染
    ============================================================ */
 function render() {
@@ -708,14 +827,15 @@ function render() {
     container.appendChild(renderMonth(d.getFullYear(), d.getMonth() + 1));
   }
 
-  if (state.layout.dynamicHeight) fitMonthlyHeights();
+  if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+  if (state.layout.dailyDynamicHeight)   fitDailyHeights();
   updateStatus();
 }
 
 function renderMonth(year, month) {
   const block = el('div', 'month-block ' + (state.continuous ? 'continuous' : 'page'));
 
-  /* --- 页眉 --- */
+  /* 页眉 */
   const hd = el('div', 'hd');
   const h1 = el('h1', null, `${year} 年 ${month} 月`);
   h1.appendChild(el('span', null, '任务日历'));
@@ -723,16 +843,16 @@ function renderMonth(year, month) {
   hd.appendChild(el('div', 'sub', '每日任务 · 每周任务 · 每月任务'));
   block.appendChild(hd);
 
-  /* --- 月度目标 --- */
+  /* 月度目标 */
   block.appendChild(renderMonthBox(year, month));
 
-  /* --- 星期表头 --- */
+  /* 星期表头 */
   const dow = el('div', 'dow');
   DOW_NAMES.forEach(n => dow.appendChild(el('i', null, n)));
   dow.appendChild(el('i', null, '本周任务'));
   block.appendChild(dow);
 
-  /* --- 周行 --- */
+  /* 周行 */
   const weeks = getMonthWeeks(year, month, state.mergeMode);
   if (weeks.length === 0) {
     block.appendChild(el('div', 'empty-tip', '本月没有符合条件的周'));
@@ -745,7 +865,7 @@ function renderMonth(year, month) {
 
 function renderMonthBox(year, month) {
   const mKey = monthKey(year, month);
-  const box  = el('div', 'month ' + (state.layout.dynamicHeight ? 'dynamic' : 'fixed'));
+  const box  = el('div', 'month ' + (state.layout.monthlyDynamicHeight ? 'dynamic' : 'fixed'));
 
   const head = el('div', 'w-head');
   head.appendChild(el('span', null, '本月任务 / 月度目标'));
@@ -830,6 +950,45 @@ function renderDay(date, year, month) {
 }
 
 /* ============================================================
+   局部字号（选中文本）
+   ============================================================ */
+function applyLocalFontSize(pt) {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) {
+    alert('请先选中要设置的文字，再选择字号。');
+    return;
+  }
+
+  const range = sel.getRangeAt(0);
+  let node = range.commonAncestorContainer;
+  if (node.nodeType === 3) node = node.parentNode;
+
+  const area = node.closest ? node.closest('.area') : null;
+  if (!area) {
+    alert('请先在输入区域内选中文字。');
+    return;
+  }
+
+  try {
+    const frag = range.extractContents();
+    const span = document.createElement('span');
+    span.style.fontSize = pt + 'pt';
+    span.appendChild(frag);
+    range.insertNode(span);
+
+    sel.removeAllRanges();
+    const nr = document.createRange();
+    nr.selectNodeContents(span);
+    sel.addRange(nr);
+
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+  } catch (e) {
+    console.error(e);
+    alert('该选区结构较复杂，请尝试重新选中后再试。');
+  }
+}
+
+/* ============================================================
    保存 / 清空
    ============================================================ */
 function doSave() {
@@ -853,7 +1012,7 @@ function clearSession() {
     state.data   = s.data;
     state.layout = s.layout;
     syncLayoutControls();
-    applyFont();
+    applyFonts();
   } else {
     state.data = { daily:{}, weekly:{}, monthly:{} };
   }
@@ -876,29 +1035,26 @@ function clearAll() {
    控件同步
    ============================================================ */
 function syncLayoutControls() {
-  $('#monthlyBg').value      = state.layout.bg;
-  $('#monthlyLayout').value  = state.layout.mode;
-  $('#equalCount').value     = state.layout.equalCount;
-  $('#ratioA').value         = state.layout.ratioA;
-  $('#ratioB').value         = state.layout.ratioB;
-  $('#dynamicHeight').checked = state.layout.dynamicHeight;
-  $('#showColLines').checked  = state.layout.showColLines;
-  $('#fontFamily').value      = state.layout.fontFamily || '';
+  const L = state.layout;
 
-  const isMulti = state.layout.mode !== 'single';
-  $('#equalCountWrap').style.display   = state.layout.mode === 'equal' ? '' : 'none';
-  $('#ratioWrap').style.display        = state.layout.mode === 'ratio' ? '' : 'none';
+  $('#monthlyBg').value            = L.bg;
+  $('#monthlyLayout').value        = L.mode;
+  $('#equalCount').value           = L.equalCount;
+  $('#ratioA').value               = L.ratioA;
+  $('#ratioB').value               = L.ratioB;
+  $('#monthlyDynamicHeight').checked = L.monthlyDynamicHeight;
+  $('#dailyDynamicHeight').checked   = L.dailyDynamicHeight;
+  $('#showColLines').checked         = L.showColLines;
+
+  $('#fontScope').value = L.fontScope;
+  $('#fontCN').value    = L.fontCN || '';
+  $('#fontEN').value    = L.fontEN || '';
+  $('#fontScale').value = L.fontScale;
+
+  const isMulti = L.mode !== 'single';
+  $('#equalCountWrap').style.display   = L.mode === 'equal' ? '' : 'none';
+  $('#ratioWrap').style.display        = L.mode === 'ratio' ? '' : 'none';
   $('#showColLinesWrap').style.display = isMulti ? '' : 'none';
-}
-
-/* ============================================================
-   加粗 / 斜体（按钮触发）
-   ============================================================ */
-function triggerAreaInput() {
-  const active = document.activeElement;
-  if (active && active.classList && active.classList.contains('area')) {
-    active.dispatchEvent(new Event('input', { bubbles: true }));
-  }
 }
 
 /* ============================================================
@@ -937,7 +1093,7 @@ function bindEvents() {
     render();
   });
 
-  /* 月度目标背景 */
+  /* 月度背景 */
   $('#monthlyBg').addEventListener('change', e => {
     state.layout.bg = e.target.value;
     markDirty();
@@ -951,7 +1107,6 @@ function bindEvents() {
     markDirty();
     render();
   });
-
   $('#equalCount').addEventListener('change', e => {
     let n = parseInt(e.target.value, 10) || 2;
     n = Math.max(1, Math.min(6, n));
@@ -960,7 +1115,6 @@ function bindEvents() {
     markDirty();
     render();
   });
-
   $('#ratioA').addEventListener('change', e => {
     let n = parseInt(e.target.value, 10) || 1;
     n = Math.max(1, Math.min(9, n));
@@ -979,10 +1133,19 @@ function bindEvents() {
   });
 
   /* 动态高度 */
-  $('#dynamicHeight').addEventListener('change', e => {
-    state.layout.dynamicHeight = e.target.checked;
+  $('#monthlyDynamicHeight').addEventListener('change', e => {
+    state.layout.monthlyDynamicHeight = e.target.checked;
     markDirty();
     render();
+  });
+  $('#dailyDynamicHeight').addEventListener('change', e => {
+    state.layout.dailyDynamicHeight = e.target.checked;
+    markDirty();
+    if (state.layout.dailyDynamicHeight) {
+      fitDailyHeights();
+    } else {
+      clearDailyHeights();
+    }
   });
 
   /* 分栏竖线 */
@@ -993,22 +1156,44 @@ function bindEvents() {
   });
 
   /* 字体 */
-  $('#fontFamily').addEventListener('input', e => {
-    state.layout.fontFamily = e.target.value;
-    applyFont();
+  $('#fontScope').addEventListener('change', e => {
+    state.layout.fontScope = e.target.value;
+    applyFonts();
     markDirty();
   });
-
-  /* 加粗 / 斜体按钮 */
-  $('#btnBold').addEventListener('mousedown', e => {
-    e.preventDefault();
-    document.execCommand('bold');
-    triggerAreaInput();
+  $('#fontCN').addEventListener('input', e => {
+    state.layout.fontCN = e.target.value;
+    applyFonts();
+    markDirty();
+    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
   });
-  $('#btnItalic').addEventListener('mousedown', e => {
-    e.preventDefault();
-    document.execCommand('italic');
-    triggerAreaInput();
+  $('#fontEN').addEventListener('input', e => {
+    state.layout.fontEN = e.target.value;
+    applyFonts();
+    markDirty();
+    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+  });
+  $('#fontScale').addEventListener('change', e => {
+    let n = parseInt(e.target.value, 10) || 100;
+    n = Math.max(50, Math.min(200, n));
+    e.target.value = n;
+    state.layout.fontScale = n;
+    applyFonts();
+    markDirty();
+    setTimeout(() => {
+      if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+      if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+    }, 30);
+  });
+
+  /* 局部字号 */
+  $('#localFontSizeSel').addEventListener('change', e => {
+    const v = e.target.value;
+    if (!v) return;
+    applyLocalFontSize(v);
+    e.target.value = '';
   });
 
   /* 操作按钮 */
@@ -1017,7 +1202,7 @@ function bindEvents() {
   $('#btnClearAll').addEventListener('click', clearAll);
   $('#btnPrint').addEventListener('click', () => window.print());
 
-  /* Ctrl / Cmd + S 保存 */
+  /* Ctrl / Cmd + S */
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
@@ -1038,13 +1223,15 @@ function bindEvents() {
   window.addEventListener('resize', () => {
     clearTimeout(rzT);
     rzT = setTimeout(() => {
-      if (state.layout.dynamicHeight) fitMonthlyHeights();
+      if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+      if (state.layout.dailyDynamicHeight)   fitDailyHeights();
     }, 120);
   });
 
   /* 打印前重算高度 */
   window.addEventListener('beforeprint', () => {
-    if (state.layout.dynamicHeight) fitMonthlyHeights();
+    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
   });
 }
 
@@ -1070,18 +1257,20 @@ function init() {
   $('#numMonths').value  = 1;
 
   syncLayoutControls();
-  applyFont();
+  applyFonts();
   bindEvents();
   render();
 
-  /* 字体加载完成后再次测量 */
+  /* 字体就绪后重新测量 */
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
-      if (state.layout.dynamicHeight) fitMonthlyHeights();
+      if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+      if (state.layout.dailyDynamicHeight)   fitDailyHeights();
     });
   }
   window.addEventListener('load', () => {
-    if (state.layout.dynamicHeight) fitMonthlyHeights();
+    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
   });
 }
 
