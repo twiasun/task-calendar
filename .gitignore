@@ -1,0 +1,18 @@
+﻿# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# 保留在磁盘但不上传 Git 的原始历史版本
+DUTY_DS.HTML
+DUTY_DS_v2.HTML
+DUTY_DS_v3.HTML
+DUTY_DS_v4.HTML

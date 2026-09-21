@@ -24,41 +24,47 @@ body{
   background:rgba(255,255,255,.96);
   backdrop-filter:blur(12px);
   border-bottom:1px solid #d8dfe8;
-  padding:9px 16px;
+  padding:8px 14px;
   display:flex;
   flex-wrap:wrap;
-  gap:8px 20px;
+  gap:8px 0;
   align-items:center;
-  font-size:13px;
+  font-size:12.5px;
 }
 .tb-group{
   display:flex;
   flex-wrap:wrap;
   gap:8px 12px;
   align-items:center;
+  padding:0 14px;
+  border-right:1px solid #e8eef5;
 }
+.tb-group:last-child{border-right:none;padding-right:0;}
 .tb-title{
   font-weight:700;
   color:#2b6cb0;
-  font-size:12px;
+  font-size:11.5px;
   letter-spacing:.3px;
 }
-.toolbar label{display:flex;align-items:center;gap:5px;color:#475569;white-space:nowrap;}
+.toolbar label{display:flex;align-items:center;gap:4px;color:#475569;white-space:nowrap;}
 .toolbar input[type="month"],
 .toolbar input[type="number"],
+.toolbar input[type="text"],
 .toolbar select{
   font:inherit;
-  padding:4px 8px;
+  font-size:12px;
+  padding:4px 7px;
   border:1px solid #cfd8e3;
   border-radius:6px;
   background:#fff;
   color:#1f2937;
 }
-.toolbar input[type="number"]{width:56px;}
-.toolbar input[type="checkbox"]{width:15px;height:15px;accent-color:#2b6cb0;cursor:pointer;}
+.toolbar input[type="number"]{width:52px;}
+.toolbar input[type="checkbox"]{width:14px;height:14px;accent-color:#2b6cb0;cursor:pointer;}
 .toolbar button{
   font:inherit;
-  padding:6px 14px;
+  font-size:12.5px;
+  padding:5px 13px;
   border-radius:999px;
   border:1px solid #cfd8e3;
   background:#fff;
@@ -72,8 +78,14 @@ body{
 .toolbar button.primary:hover{background:#245a94;}
 .toolbar button.danger{color:#b91c1c;border-color:#fecaca;}
 .toolbar button.danger:hover{background:#fef2f2;}
-.toolbar .status{font-size:12px;color:#94a3b8;margin-left:auto;min-width:110px;text-align:right;}
+.toolbar button.fmt{
+  width:32px;padding:5px 0;text-align:center;font-weight:700;
+  border-radius:7px;
+}
+.toolbar button.fmt.italic{font-style:italic;font-weight:500;}
+.toolbar .status{font-size:11.5px;color:#94a3b8;min-width:110px;text-align:right;}
 .toolbar .status.dirty{color:#c2410c;font-weight:600;}
+.toolbar .hint{font-size:11px;color:#b0bccb;}
 
 /* ========== 容器 ========== */
 #calendar{padding:16px 0;}
@@ -117,9 +129,8 @@ body{
 .hd h1 span{font-size:9pt;font-weight:500;color:#94a3b8;margin-left:2mm;letter-spacing:0;}
 .hd .sub{font-size:6.5pt;color:#94a3b8;letter-spacing:.5px;}
 
-/* ========== 月度任务（动态高度） ========== */
+/* ========== 月度任务 ========== */
 .month{
-  flex:0 0 auto;
   border:1pt solid #c3d4e8;
   border-radius:1.6mm;
   background:linear-gradient(180deg,#f5f9fe 0%,#fff 60%);
@@ -127,52 +138,34 @@ body{
   flex-direction:column;
   overflow:hidden;
 }
+.month.fixed{flex:0 0 26mm;height:26mm;}
+.month.dynamic{flex:0 0 auto;}
 .month-block.continuous .month{margin-bottom:2mm;}
 
 .month-body{
+  flex:1 1 auto;
+  min-height:0;
   display:grid;
   gap:1.6mm;
-  padding:0;
-  flex:1 1 auto;
-  min-height:0;
-  align-items:start;
+}
+.month.fixed .month-body{min-height:0;}
+.month.fixed .month-body .area{height:100%;min-height:0;}
+
+/* 分栏竖线 */
+.month-body.show-lines .area:not(:first-child){
+  border-left:1px solid #c3d4e8;
 }
 
-/* 月度区输入框：由 JS 统一设定高度 */
-.month-body .area{
-  flex:none;
-  width:100%;
-  min-height:0;
-  padding:0 1.6mm;
-  font-size:6.5pt;
-  line-height:4.3mm;
-  overflow:auto;
-  background-image:repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 4.1mm,
-    #e3ecf6 4.1mm,
-    #e3ecf6 4.3mm
-  );
-  background-attachment:local;
-  border-radius:0 0 1.2mm 1.2mm;
-}
-.month-body .area.bg-blank{background-image:none;}
-.month-body .area:focus{background-color:#fbfdff;}
-
-/* ========== 通用输入区 ========== */
+/* ========== 输入区（contenteditable） ========== */
 .area{
   width:100%;
-  flex:1 1 auto;
-  min-height:0;
   border:none;
   outline:none;
-  resize:none;
   background:transparent;
   font-family:inherit;
   font-size:6.5pt;
   line-height:4.3mm;
-  padding:0 1.4mm;
+  padding:0 1.6mm;
   color:inherit;
   overflow:auto;
   white-space:pre-wrap;
@@ -181,15 +174,37 @@ body{
     to bottom,
     transparent 0,
     transparent 4.1mm,
-    #e9eff5 4.1mm,
-    #e9eff5 4.3mm
+    #e3ecf6 4.1mm,
+    #e3ecf6 4.3mm
   );
   background-attachment:local;
+  cursor:text;
+  min-height:4.3mm;
+  box-sizing:border-box;
+  border-radius:0 0 1.2mm 1.2mm;
 }
+.area.bg-blank{background-image:none;}
 .area:focus{background-color:#fbfdff;box-shadow:inset 0 0 0 1px #bfd7f2;}
 .area::-webkit-scrollbar{width:4px;}
 .area::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px;}
 .area::-webkit-scrollbar-track{background:transparent;}
+.area b,.area strong{font-weight:700;}
+.area i,.area em{font-style:italic;}
+
+/* 每日 / 每周 输入区（保持原样式） */
+.day .area,
+.weektask .area{
+  padding:0 1.4mm;
+  font-size:6.5pt;
+  line-height:4.3mm;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 4.1mm,
+    #e9eff5 4.1mm,
+    #e9eff5 4.3mm
+  );
+}
 
 /* ========== 星期表头 ========== */
 .dow{
@@ -231,11 +246,6 @@ body{
 }
 .d-num{font-size:7.5pt;font-weight:800;letter-spacing:.2px;}
 .d-dow{font-size:5.6pt;color:#a8b3c2;letter-spacing:0;}
-.day .area{
-  padding:0 1.4mm;
-  font-size:6.5pt;
-  line-height:4.3mm;
-}
 .day.wknd{background:#fdfaf8;}
 .day.wknd .d-num{color:#c2410c;}
 .day.off{background:#f4f6f9;}
@@ -265,18 +275,6 @@ body{
   color:#2b6cb0;
 }
 .w-head small{font-size:5.6pt;font-weight:400;color:#9fb0c4;}
-.weektask .area{
-  padding:0 1.6mm;
-  font-size:6.5pt;
-  line-height:4.3mm;
-  background-image:repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 4.1mm,
-    #e3ecf6 4.1mm,
-    #e3ecf6 4.3mm
-  );
-}
 
 /* ========== 空状态 ========== */
 .empty-tip{
@@ -321,20 +319,16 @@ body{
 <!-- ========== 工具栏 ========== -->
 <div class="toolbar noprint">
 
-  <!-- 视图设置 -->
+  <!-- 视图 -->
   <div class="tb-group">
-    <label>起始月份
-      <input type="month" id="startMonth">
-    </label>
-    <label>显示
-      <input type="number" id="numMonths" min="1" max="24" value="1">
-      个月
-    </label>
+    <span class="tb-title">视图</span>
+    <label>起始 <input type="month" id="startMonth"></label>
+    <label>显示 <input type="number" id="numMonths" min="1" max="24" value="1"> 个月</label>
     <label><input type="checkbox" id="continuous"> 连续滚动</label>
     <label><input type="checkbox" id="mergeMode"> 合并周</label>
   </div>
 
-  <!-- 月度目标格式 -->
+  <!-- 月度目标 -->
   <div class="tb-group">
     <span class="tb-title">月度目标</span>
     <label>背景
@@ -357,6 +351,43 @@ body{
       <input type="number" id="ratioA" min="1" max="9" value="1">:
       <input type="number" id="ratioB" min="1" max="9" value="1">
     </label>
+    <label id="showColLinesWrap" style="display:none">
+      <input type="checkbox" id="showColLines"> 分栏竖线
+    </label>
+    <label>
+      <input type="checkbox" id="dynamicHeight" checked> 动态高度
+    </label>
+  </div>
+
+  <!-- 字体 -->
+  <div class="tb-group">
+    <span class="tb-title">字体</span>
+    <input type="text" id="fontFamily" list="fontList" placeholder="默认字体" style="width:130px;">
+    <datalist id="fontList">
+      <option value="PingFang SC">苹方</option>
+      <option value="Microsoft YaHei">微软雅黑</option>
+      <option value="Microsoft JhengHei">微软正黑体</option>
+      <option value="SimSun">宋体</option>
+      <option value="SimHei">黑体</option>
+      <option value="KaiTi">楷体</option>
+      <option value="FangSong">仿宋</option>
+      <option value="STSong">华文宋体</option>
+      <option value="STKaiti">华文楷体</option>
+      <option value="STHeiti">华文黑体</option>
+      <option value="Noto Sans SC">Noto Sans SC</option>
+      <option value="Noto Serif SC">Noto Serif SC</option>
+      <option value="Source Han Sans SC">思源黑体</option>
+      <option value="Source Han Serif SC">思源宋体</option>
+      <option value="WenQuanYi Micro Hei">文泉驿微米黑</option>
+      <option value="Arial">Arial</option>
+      <option value="Helvetica">Helvetica</option>
+      <option value="Georgia">Georgia</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </datalist>
+    <button type="button" id="btnBold" class="fmt" title="加粗（选中文字后按 Ctrl+B）">B</button>
+    <button type="button" id="btnItalic" class="fmt italic" title="斜体（选中文字后按 Ctrl+I）">I</button>
+    <span class="hint">选中文字后 Ctrl+B / Ctrl+I</span>
   </div>
 
   <!-- 操作 -->
@@ -377,15 +408,18 @@ body{
 /* ============================================================
    常量
    ============================================================ */
-const STORAGE_KEY = 'taskCalendar_v4';
+const STORAGE_KEY = 'taskCalendar_v5';
 const DOW_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
 
 const DEFAULT_LAYOUT = {
-  mode: 'single',     // single | equal | ratio
+  mode: 'single',          // single | equal | ratio
   equalCount: 2,
   ratioA: 1,
   ratioB: 1,
-  bg: 'lines',        // lines | blank
+  bg: 'lines',             // lines | blank
+  dynamicHeight: true,     // 月度目标动态高度
+  showColLines: false,     // 分栏竖线
+  fontFamily: '',          // 本地字体
 };
 
 /* ============================================================
@@ -415,7 +449,6 @@ function el(tag, cls, text) {
   if (text !== undefined) e.textContent = text;
   return e;
 }
-
 function dateKey(d) {
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 }
@@ -462,7 +495,7 @@ function getLayoutConfig() {
 }
 
 /* ============================================================
-   月度目标内容读写（支持多栏）
+   月度目标内容读写（多栏数组）
    ============================================================ */
 function getMonthlySlot(mKey, i) {
   const v = state.data.monthly[mKey];
@@ -499,7 +532,6 @@ function loadAll() {
     return null;
   }
 }
-
 function persistData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     daily:   state.data.daily,
@@ -507,6 +539,9 @@ function persistData() {
     monthly: state.data.monthly,
     layout:  state.layout,
   }));
+}
+function snapshot() {
+  return JSON.stringify({ data: state.data, layout: state.layout });
 }
 
 /* ============================================================
@@ -525,6 +560,19 @@ function updateStatus() {
   } else {
     s.textContent = '✓ 已保存';
     s.className = 'status';
+  }
+}
+
+/* ============================================================
+   字体
+   ============================================================ */
+function applyFont() {
+  const f = (state.layout.fontFamily || '').trim();
+  if (f) {
+    document.body.style.fontFamily =
+      `"${f}", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC", system-ui, -apple-system, sans-serif`;
+  } else {
+    document.body.style.fontFamily = '';
   }
 }
 
@@ -556,38 +604,60 @@ function getMonthWeeks(year, month, mergeMode) {
 }
 
 /* ============================================================
-   输入区构建
+   输入区：读取 / 写入
    ============================================================ */
-function makeArea(value, key, type, onInput) {
-  const ta = document.createElement('textarea');
-  ta.className = 'area';
-  ta.value = value || '';
-  ta.spellcheck = false;
-  ta.dataset.key = key;
-  ta.dataset.type = type;
-
-  ta.addEventListener('input', () => {
-    onInput(ta.value);
-    markDirty();
-    syncSameKey(key, ta.value, ta);
-    if (type === 'monthly') fitMonthlyHeights();
-  });
-
-  return ta;
+function readEditable(elm) {
+  const txt = (elm.textContent || '').replace(/\u200B/g, '').trim();
+  if (!txt) return '';
+  return elm.innerHTML;
 }
 
-/* 同一个 key 可能出现在多个月份块中，保持同步 */
-function syncSameKey(key, value, excludeEl) {
-  document.querySelectorAll(`[data-key="${key}"]`).forEach(ta => {
-    if (ta !== excludeEl && ta.value !== value) ta.value = value;
+function makeArea(value, key, type, onInput) {
+  const elm = document.createElement('div');
+  elm.className = 'area';
+  elm.setAttribute('contenteditable', 'true');
+  elm.spellcheck = false;
+  elm.dataset.key = key;
+  elm.dataset.type = type;
+  if (value) elm.innerHTML = value;
+
+  /* 输入 → 保存 */
+  elm.addEventListener('input', () => {
+    onInput(readEditable(elm));
+    markDirty();
+    syncSameKey(key, elm.innerHTML, elm);
+    if (type === 'monthly' && state.layout.dynamicHeight) fitMonthlyHeights();
+  });
+
+  /* 回车统一为 <br>，避免高度计算差异 */
+  elm.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.execCommand('insertLineBreak');
+    }
+  });
+
+  /* 粘贴纯文本，避免带入外部样式 */
+  elm.addEventListener('paste', e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+
+  return elm;
+}
+
+function syncSameKey(key, html, excludeEl) {
+  document.querySelectorAll(`[data-key="${key}"]`).forEach(e => {
+    if (e !== excludeEl && e.innerHTML !== html) e.innerHTML = html;
   });
 }
 
 /* ============================================================
-   动态高度：月度目标最多 3 行，最少 1 行
+   动态高度：月度目标 1–3 行（仅 dynamic 模式）
    ============================================================ */
 function fitMonthlyHeights() {
-  document.querySelectorAll('.month').forEach(box => {
+  document.querySelectorAll('.month.dynamic').forEach(box => {
     const areas = box.querySelectorAll('.month-body .area');
     if (!areas.length) return;
 
@@ -638,7 +708,7 @@ function render() {
     container.appendChild(renderMonth(d.getFullYear(), d.getMonth() + 1));
   }
 
-  fitMonthlyHeights();
+  if (state.layout.dynamicHeight) fitMonthlyHeights();
   updateStatus();
 }
 
@@ -653,7 +723,7 @@ function renderMonth(year, month) {
   hd.appendChild(el('div', 'sub', '每日任务 · 每周任务 · 每月任务'));
   block.appendChild(hd);
 
-  /* --- 月度目标（动态高度 + 分栏） --- */
+  /* --- 月度目标 --- */
   block.appendChild(renderMonthBox(year, month));
 
   /* --- 星期表头 --- */
@@ -675,7 +745,7 @@ function renderMonth(year, month) {
 
 function renderMonthBox(year, month) {
   const mKey = monthKey(year, month);
-  const box  = el('div', 'month');
+  const box  = el('div', 'month ' + (state.layout.dynamicHeight ? 'dynamic' : 'fixed'));
 
   const head = el('div', 'w-head');
   head.appendChild(el('span', null, '本月任务 / 月度目标'));
@@ -685,6 +755,10 @@ function renderMonthBox(year, month) {
   const body = el('div', 'month-body');
   const cfg  = getLayoutConfig();
   body.style.gridTemplateColumns = cfg.template;
+
+  if (state.layout.showColLines && cfg.cols > 1) {
+    body.classList.add('show-lines');
+  }
 
   for (let i = 0; i < cfg.cols; i++) {
     const key = `${mKey}#${i}`;
@@ -758,10 +832,6 @@ function renderDay(date, year, month) {
 /* ============================================================
    保存 / 清空
    ============================================================ */
-function snapshot() {
-  return JSON.stringify({ data: state.data, layout: state.layout });
-}
-
 function doSave() {
   persistData();
   state.savedSnapshot = snapshot();
@@ -783,6 +853,7 @@ function clearSession() {
     state.data   = s.data;
     state.layout = s.layout;
     syncLayoutControls();
+    applyFont();
   } else {
     state.data = { daily:{}, weekly:{}, monthly:{} };
   }
@@ -805,14 +876,29 @@ function clearAll() {
    控件同步
    ============================================================ */
 function syncLayoutControls() {
-  $('#monthlyBg').value     = state.layout.bg;
-  $('#monthlyLayout').value = state.layout.mode;
-  $('#equalCount').value    = state.layout.equalCount;
-  $('#ratioA').value        = state.layout.ratioA;
-  $('#ratioB').value        = state.layout.ratioB;
+  $('#monthlyBg').value      = state.layout.bg;
+  $('#monthlyLayout').value  = state.layout.mode;
+  $('#equalCount').value     = state.layout.equalCount;
+  $('#ratioA').value         = state.layout.ratioA;
+  $('#ratioB').value         = state.layout.ratioB;
+  $('#dynamicHeight').checked = state.layout.dynamicHeight;
+  $('#showColLines').checked  = state.layout.showColLines;
+  $('#fontFamily').value      = state.layout.fontFamily || '';
 
-  $('#equalCountWrap').style.display = state.layout.mode === 'equal' ? '' : 'none';
-  $('#ratioWrap').style.display      = state.layout.mode === 'ratio' ? '' : 'none';
+  const isMulti = state.layout.mode !== 'single';
+  $('#equalCountWrap').style.display   = state.layout.mode === 'equal' ? '' : 'none';
+  $('#ratioWrap').style.display        = state.layout.mode === 'ratio' ? '' : 'none';
+  $('#showColLinesWrap').style.display = isMulti ? '' : 'none';
+}
+
+/* ============================================================
+   加粗 / 斜体（按钮触发）
+   ============================================================ */
+function triggerAreaInput() {
+  const active = document.activeElement;
+  if (active && active.classList && active.classList.contains('area')) {
+    active.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 }
 
 /* ============================================================
@@ -820,7 +906,7 @@ function syncLayoutControls() {
    ============================================================ */
 function bindEvents() {
 
-  /* --- 起始月份 --- */
+  /* 起始月份 */
   $('#startMonth').addEventListener('change', e => {
     const v = e.target.value;
     if (!v) return;
@@ -830,7 +916,7 @@ function bindEvents() {
     render();
   });
 
-  /* --- 显示月数 --- */
+  /* 显示月数 */
   $('#numMonths').addEventListener('change', e => {
     let n = parseInt(e.target.value, 10) || 1;
     n = Math.max(1, Math.min(24, n));
@@ -839,26 +925,26 @@ function bindEvents() {
     render();
   });
 
-  /* --- 连续滚动 --- */
+  /* 连续滚动 */
   $('#continuous').addEventListener('change', e => {
     state.continuous = e.target.checked;
     render();
   });
 
-  /* --- 合并周 --- */
+  /* 合并周 */
   $('#mergeMode').addEventListener('change', e => {
     state.mergeMode = e.target.checked;
     render();
   });
 
-  /* --- 月度目标背景 --- */
+  /* 月度目标背景 */
   $('#monthlyBg').addEventListener('change', e => {
     state.layout.bg = e.target.value;
     markDirty();
     render();
   });
 
-  /* --- 月度目标分栏 --- */
+  /* 分栏 */
   $('#monthlyLayout').addEventListener('change', e => {
     state.layout.mode = e.target.value;
     syncLayoutControls();
@@ -883,7 +969,6 @@ function bindEvents() {
     markDirty();
     render();
   });
-
   $('#ratioB').addEventListener('change', e => {
     let n = parseInt(e.target.value, 10) || 1;
     n = Math.max(1, Math.min(9, n));
@@ -893,13 +978,46 @@ function bindEvents() {
     render();
   });
 
-  /* --- 按钮 --- */
+  /* 动态高度 */
+  $('#dynamicHeight').addEventListener('change', e => {
+    state.layout.dynamicHeight = e.target.checked;
+    markDirty();
+    render();
+  });
+
+  /* 分栏竖线 */
+  $('#showColLines').addEventListener('change', e => {
+    state.layout.showColLines = e.target.checked;
+    markDirty();
+    render();
+  });
+
+  /* 字体 */
+  $('#fontFamily').addEventListener('input', e => {
+    state.layout.fontFamily = e.target.value;
+    applyFont();
+    markDirty();
+  });
+
+  /* 加粗 / 斜体按钮 */
+  $('#btnBold').addEventListener('mousedown', e => {
+    e.preventDefault();
+    document.execCommand('bold');
+    triggerAreaInput();
+  });
+  $('#btnItalic').addEventListener('mousedown', e => {
+    e.preventDefault();
+    document.execCommand('italic');
+    triggerAreaInput();
+  });
+
+  /* 操作按钮 */
   $('#btnSave').addEventListener('click', doSave);
   $('#btnClearSession').addEventListener('click', clearSession);
   $('#btnClearAll').addEventListener('click', clearAll);
   $('#btnPrint').addEventListener('click', () => window.print());
 
-  /* --- Ctrl / Cmd + S --- */
+  /* Ctrl / Cmd + S 保存 */
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
@@ -907,7 +1025,7 @@ function bindEvents() {
     }
   });
 
-  /* --- 离开前提醒 --- */
+  /* 离开前提醒 */
   window.addEventListener('beforeunload', e => {
     if (state.dirty) {
       e.preventDefault();
@@ -915,11 +1033,18 @@ function bindEvents() {
     }
   });
 
-  /* --- 窗口尺寸变化，重新测量月度高度 --- */
+  /* 窗口尺寸变化 */
   let rzT = null;
   window.addEventListener('resize', () => {
     clearTimeout(rzT);
-    rzT = setTimeout(fitMonthlyHeights, 120);
+    rzT = setTimeout(() => {
+      if (state.layout.dynamicHeight) fitMonthlyHeights();
+    }, 120);
+  });
+
+  /* 打印前重算高度 */
+  window.addEventListener('beforeprint', () => {
+    if (state.layout.dynamicHeight) fitMonthlyHeights();
   });
 }
 
@@ -945,14 +1070,19 @@ function init() {
   $('#numMonths').value  = 1;
 
   syncLayoutControls();
+  applyFont();
   bindEvents();
   render();
 
   /* 字体加载完成后再次测量 */
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(fitMonthlyHeights);
+    document.fonts.ready.then(() => {
+      if (state.layout.dynamicHeight) fitMonthlyHeights();
+    });
   }
-  window.addEventListener('load', fitMonthlyHeights);
+  window.addEventListener('load', () => {
+    if (state.layout.dynamicHeight) fitMonthlyHeights();
+  });
 }
 
 init();
