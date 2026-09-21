@@ -24,16 +24,29 @@ body{
   background:rgba(255,255,255,.96);
   backdrop-filter:blur(12px);
   border-bottom:1px solid #d8dfe8;
-  padding:10px 16px;
+  padding:9px 16px;
   display:flex;
   flex-wrap:wrap;
-  gap:10px 14px;
+  gap:8px 20px;
   align-items:center;
   font-size:13px;
 }
+.tb-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  align-items:center;
+}
+.tb-title{
+  font-weight:700;
+  color:#2b6cb0;
+  font-size:12px;
+  letter-spacing:.3px;
+}
 .toolbar label{display:flex;align-items:center;gap:5px;color:#475569;white-space:nowrap;}
 .toolbar input[type="month"],
-.toolbar input[type="number"]{
+.toolbar input[type="number"],
+.toolbar select{
   font:inherit;
   padding:4px 8px;
   border:1px solid #cfd8e3;
@@ -41,7 +54,7 @@ body{
   background:#fff;
   color:#1f2937;
 }
-.toolbar input[type="number"]{width:58px;}
+.toolbar input[type="number"]{width:56px;}
 .toolbar input[type="checkbox"]{width:15px;height:15px;accent-color:#2b6cb0;cursor:pointer;}
 .toolbar button{
   font:inherit;
@@ -59,8 +72,7 @@ body{
 .toolbar button.primary:hover{background:#245a94;}
 .toolbar button.danger{color:#b91c1c;border-color:#fecaca;}
 .toolbar button.danger:hover{background:#fef2f2;}
-.toolbar .sep{width:1px;height:22px;background:#d8dfe8;margin:0 2px;}
-.toolbar .status{font-size:12px;color:#94a3b8;margin-left:auto;min-width:100px;text-align:right;}
+.toolbar .status{font-size:12px;color:#94a3b8;margin-left:auto;min-width:110px;text-align:right;}
 .toolbar .status.dirty{color:#c2410c;font-weight:600;}
 
 /* ========== 容器 ========== */
@@ -72,7 +84,6 @@ body{
   flex-direction:column;
   gap:1.6mm;
 }
-
 .month-block.page{
   width:281mm;
   height:193mm;
@@ -82,7 +93,6 @@ body{
   box-shadow:0 6px 24px rgba(15,23,42,.13);
   overflow:hidden;
 }
-
 .month-block.continuous{
   max-width:1400px;
   margin:0 auto 32px;
@@ -91,9 +101,7 @@ body{
   border-radius:12px;
   box-shadow:0 2px 12px rgba(15,23,42,.08);
 }
-.month-block.continuous .week{flex:0 0 auto;height:90px;}
-.month-block.continuous .day{min-height:0;}
-
+.month-block.continuous .week{flex:0 0 auto;height:92px;}
 .month-block.page .week{flex:1 1 0;min-height:0;}
 
 /* ========== 页眉 ========== */
@@ -109,9 +117,9 @@ body{
 .hd h1 span{font-size:9pt;font-weight:500;color:#94a3b8;margin-left:2mm;letter-spacing:0;}
 .hd .sub{font-size:6.5pt;color:#94a3b8;letter-spacing:.5px;}
 
-/* ========== 月度任务 ========== */
+/* ========== 月度任务（动态高度） ========== */
 .month{
-  flex:0 0 26mm;
+  flex:0 0 auto;
   border:1pt solid #c3d4e8;
   border-radius:1.6mm;
   background:linear-gradient(180deg,#f5f9fe 0%,#fff 60%);
@@ -119,7 +127,38 @@ body{
   flex-direction:column;
   overflow:hidden;
 }
-.month-block.continuous .month{flex:0 0 auto;height:70px;}
+.month-block.continuous .month{margin-bottom:2mm;}
+
+.month-body{
+  display:grid;
+  gap:1.6mm;
+  padding:0;
+  flex:1 1 auto;
+  min-height:0;
+  align-items:start;
+}
+
+/* 月度区输入框：由 JS 统一设定高度 */
+.month-body .area{
+  flex:none;
+  width:100%;
+  min-height:0;
+  padding:0 1.6mm;
+  font-size:6.5pt;
+  line-height:4.3mm;
+  overflow:auto;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 4.1mm,
+    #e3ecf6 4.1mm,
+    #e3ecf6 4.3mm
+  );
+  background-attachment:local;
+  border-radius:0 0 1.2mm 1.2mm;
+}
+.month-body .area.bg-blank{background-image:none;}
+.month-body .area:focus{background-color:#fbfdff;}
 
 /* ========== 通用输入区 ========== */
 .area{
@@ -196,13 +235,6 @@ body{
   padding:0 1.4mm;
   font-size:6.5pt;
   line-height:4.3mm;
-  background-image:repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 4.1mm,
-    #e9eff5 4.1mm,
-    #e9eff5 4.3mm
-  );
 }
 .day.wknd{background:#fdfaf8;}
 .day.wknd .d-num{color:#c2410c;}
@@ -288,28 +320,54 @@ body{
 
 <!-- ========== 工具栏 ========== -->
 <div class="toolbar noprint">
-  <label>起始月份
-    <input type="month" id="startMonth">
-  </label>
-  <label>显示
-    <input type="number" id="numMonths" min="1" max="24" value="1">
-    个月
-  </label>
-  <span class="sep"></span>
-  <label>
-    <input type="checkbox" id="continuous">
-    连续滚动
-  </label>
-  <label>
-    <input type="checkbox" id="mergeMode">
-    合并周（每页 4–5 周）
-  </label>
-  <span class="sep"></span>
-  <button id="btnSave" class="primary">保存数据</button>
-  <button id="btnClearSession">清空本次填写</button>
-  <button id="btnClearAll" class="danger">清空全部</button>
-  <button id="btnPrint">打印 / 导出 PDF</button>
-  <span class="status" id="status"></span>
+
+  <!-- 视图设置 -->
+  <div class="tb-group">
+    <label>起始月份
+      <input type="month" id="startMonth">
+    </label>
+    <label>显示
+      <input type="number" id="numMonths" min="1" max="24" value="1">
+      个月
+    </label>
+    <label><input type="checkbox" id="continuous"> 连续滚动</label>
+    <label><input type="checkbox" id="mergeMode"> 合并周</label>
+  </div>
+
+  <!-- 月度目标格式 -->
+  <div class="tb-group">
+    <span class="tb-title">月度目标</span>
+    <label>背景
+      <select id="monthlyBg">
+        <option value="lines">横线</option>
+        <option value="blank">空白</option>
+      </select>
+    </label>
+    <label>分栏
+      <select id="monthlyLayout">
+        <option value="single">单栏</option>
+        <option value="equal">等分</option>
+        <option value="ratio">非等分</option>
+      </select>
+    </label>
+    <label id="equalCountWrap" style="display:none">等分数
+      <input type="number" id="equalCount" min="1" max="6" value="2">
+    </label>
+    <label id="ratioWrap" style="display:none">比例
+      <input type="number" id="ratioA" min="1" max="9" value="1">:
+      <input type="number" id="ratioB" min="1" max="9" value="1">
+    </label>
+  </div>
+
+  <!-- 操作 -->
+  <div class="tb-group">
+    <button id="btnSave" class="primary">保存数据</button>
+    <button id="btnClearSession">清空本次填写</button>
+    <button id="btnClearAll" class="danger">清空全部</button>
+    <button id="btnPrint">打印 / 导出 PDF</button>
+    <span class="status" id="status"></span>
+  </div>
+
 </div>
 
 <!-- ========== 日历容器 ========== -->
@@ -319,8 +377,16 @@ body{
 /* ============================================================
    常量
    ============================================================ */
-const STORAGE_KEY = 'taskCalendar_v3';
+const STORAGE_KEY = 'taskCalendar_v4';
 const DOW_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
+
+const DEFAULT_LAYOUT = {
+  mode: 'single',     // single | equal | ratio
+  equalCount: 2,
+  ratioA: 1,
+  ratioB: 1,
+  bg: 'lines',        // lines | blank
+};
 
 /* ============================================================
    状态
@@ -332,12 +398,13 @@ const state = {
   continuous: false,
   mergeMode: false,
   data: { daily:{}, weekly:{}, monthly:{} },
+  layout: Object.assign({}, DEFAULT_LAYOUT),
   savedSnapshot: null,
   dirty: false,
 };
 
 /* ============================================================
-   工具函数
+   小工具
    ============================================================ */
 const $ = s => document.querySelector(s);
 const pad2 = n => String(n).padStart(2,'0');
@@ -352,17 +419,14 @@ function el(tag, cls, text) {
 function dateKey(d) {
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 }
-
 function monthKey(y, m) {
   return `${y}-${pad2(m)}`;
 }
-
 function addDays(d, n) {
   const r = new Date(d);
   r.setDate(r.getDate() + n);
   return r;
 }
-
 function startOfWeek(d) {
   const r = new Date(d);
   r.setHours(0,0,0,0);
@@ -371,47 +435,87 @@ function startOfWeek(d) {
   r.setDate(r.getDate() + diff);
   return r;
 }
-
 function isSameDay(a, b) {
   return a.getFullYear() === b.getFullYear()
     && a.getMonth() === b.getMonth()
     && a.getDate() === b.getDate();
 }
-
 function fmtShort(d) {
   return `${d.getMonth()+1}/${d.getDate()}`;
 }
 
 /* ============================================================
-   数据持久化
+   月度目标分栏配置
    ============================================================ */
-function loadData() {
+function getLayoutConfig() {
+  const L = state.layout;
+  if (L.mode === 'equal') {
+    const n = Math.max(1, Math.min(6, parseInt(L.equalCount, 10) || 2));
+    return { cols: n, template: `repeat(${n}, 1fr)` };
+  }
+  if (L.mode === 'ratio') {
+    const a = Math.max(1, Math.min(9, parseInt(L.ratioA, 10) || 1));
+    const b = Math.max(1, Math.min(9, parseInt(L.ratioB, 10) || 1));
+    return { cols: 2, template: `${a}fr ${b}fr` };
+  }
+  return { cols: 1, template: '1fr' };
+}
+
+/* ============================================================
+   月度目标内容读写（支持多栏）
+   ============================================================ */
+function getMonthlySlot(mKey, i) {
+  const v = state.data.monthly[mKey];
+  if (Array.isArray(v)) return v[i] || '';
+  if (typeof v === 'string') return i === 0 ? v : '';
+  return '';
+}
+function setMonthlySlot(mKey, i, val) {
+  let arr = state.data.monthly[mKey];
+  if (!Array.isArray(arr)) {
+    const old = arr;
+    arr = [];
+    if (typeof old === 'string' && old) arr[0] = old;
+    state.data.monthly[mKey] = arr;
+  }
+  arr[i] = val;
+}
+
+/* ============================================================
+   持久化
+   ============================================================ */
+function loadAll() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { daily:{}, weekly:{}, monthly:{} };
+    if (!raw) return null;
     const d = JSON.parse(raw);
     return {
       daily:   d.daily   || {},
       weekly:  d.weekly  || {},
       monthly: d.monthly || {},
+      layout:  Object.assign({}, DEFAULT_LAYOUT, d.layout || {}),
     };
-  } catch(e) {
-    return { daily:{}, weekly:{}, monthly:{} };
+  } catch (e) {
+    return null;
   }
 }
 
 function persistData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    daily:   state.data.daily,
+    weekly:  state.data.weekly,
+    monthly: state.data.monthly,
+    layout:  state.layout,
+  }));
 }
 
 /* ============================================================
-   状态更新
+   状态提示
    ============================================================ */
 function markDirty() {
   state.dirty = true;
   updateStatus();
 }
-
 function updateStatus() {
   const s = $('#status');
   if (!s) return;
@@ -441,22 +545,18 @@ function getMonthWeeks(year, month, mergeMode) {
     let daysInMonth = 0;
     for (let i = 0; i < 7; i++) {
       const d = addDays(cur, i);
-      if (d.getFullYear() === year && d.getMonth() === month - 1) {
-        daysInMonth++;
-      }
+      if (d.getFullYear() === year && d.getMonth() === month - 1) daysInMonth++;
     }
     weeks.push({ start: new Date(cur), daysInMonth });
     cur = addDays(cur, 7);
   }
 
-  if (mergeMode) {
-    return weeks.filter(w => w.daysInMonth >= 4);
-  }
+  if (mergeMode) return weeks.filter(w => w.daysInMonth >= 4);
   return weeks;
 }
 
 /* ============================================================
-   输入区创建
+   输入区构建
    ============================================================ */
 function makeArea(value, key, type, onInput) {
   const ta = document.createElement('textarea');
@@ -470,17 +570,54 @@ function makeArea(value, key, type, onInput) {
     onInput(ta.value);
     markDirty();
     syncSameKey(key, ta.value, ta);
+    if (type === 'monthly') fitMonthlyHeights();
   });
 
   return ta;
 }
 
-/* 同步同一 key 的多个输入框（跨月重复出现时） */
+/* 同一个 key 可能出现在多个月份块中，保持同步 */
 function syncSameKey(key, value, excludeEl) {
   document.querySelectorAll(`[data-key="${key}"]`).forEach(ta => {
-    if (ta !== excludeEl && ta.value !== value) {
-      ta.value = value;
-    }
+    if (ta !== excludeEl && ta.value !== value) ta.value = value;
+  });
+}
+
+/* ============================================================
+   动态高度：月度目标最多 3 行，最少 1 行
+   ============================================================ */
+function fitMonthlyHeights() {
+  document.querySelectorAll('.month').forEach(box => {
+    const areas = box.querySelectorAll('.month-body .area');
+    if (!areas.length) return;
+
+    let maxH = 0;
+
+    areas.forEach(ta => {
+      const cs   = getComputedStyle(ta);
+      const lh   = parseFloat(cs.lineHeight) || 16;
+      const padT = parseFloat(cs.paddingTop) || 0;
+      const padB = parseFloat(cs.paddingBottom) || 0;
+
+      const prevH  = ta.style.height;
+      const prevOv = ta.style.overflow;
+
+      ta.style.height   = '0px';
+      ta.style.overflow = 'hidden';
+      const sh = ta.scrollHeight;
+      ta.style.height   = prevH;
+      ta.style.overflow = prevOv;
+
+      const textH = Math.max(0, sh - padT - padB);
+      let lines = Math.round(textH / lh);
+      if (!isFinite(lines) || lines < 1) lines = 1;
+      if (lines > 3) lines = 3;
+
+      const h = lines * lh + padT + padB;
+      if (h > maxH) maxH = h;
+    });
+
+    areas.forEach(ta => { ta.style.height = maxH + 'px'; });
   });
 }
 
@@ -501,6 +638,7 @@ function render() {
     container.appendChild(renderMonth(d.getFullYear(), d.getMonth() + 1));
   }
 
+  fitMonthlyHeights();
   updateStatus();
 }
 
@@ -515,24 +653,8 @@ function renderMonth(year, month) {
   hd.appendChild(el('div', 'sub', '每日任务 · 每周任务 · 每月任务'));
   block.appendChild(hd);
 
-  /* --- 月度任务 --- */
-  const mKey = monthKey(year, month);
-  const monthBox = el('div', 'month');
-  const mHead = el('div', 'w-head');
-  const mTitle = el('span', null, '本月任务 / 月度目标');
-  const mTag = el('small', null, 'MONTHLY');
-  mHead.appendChild(mTitle);
-  mHead.appendChild(mTag);
-  monthBox.appendChild(mHead);
-
-  const monthArea = makeArea(
-    state.data.monthly[mKey] || '',
-    mKey,
-    'monthly',
-    v => { state.data.monthly[mKey] = v; }
-  );
-  monthBox.appendChild(monthArea);
-  block.appendChild(monthBox);
+  /* --- 月度目标（动态高度 + 分栏） --- */
+  block.appendChild(renderMonthBox(year, month));
 
   /* --- 星期表头 --- */
   const dow = el('div', 'dow');
@@ -543,87 +665,109 @@ function renderMonth(year, month) {
   /* --- 周行 --- */
   const weeks = getMonthWeeks(year, month, state.mergeMode);
   if (weeks.length === 0) {
-    const tip = el('div', 'empty-tip', '本月没有符合条件的周');
-    block.appendChild(tip);
+    block.appendChild(el('div', 'empty-tip', '本月没有符合条件的周'));
   } else {
-    weeks.forEach(w => {
-      block.appendChild(renderWeek(w.start, year, month));
-    });
+    weeks.forEach(w => block.appendChild(renderWeek(w.start, year, month)));
   }
 
   return block;
 }
 
+function renderMonthBox(year, month) {
+  const mKey = monthKey(year, month);
+  const box  = el('div', 'month');
+
+  const head = el('div', 'w-head');
+  head.appendChild(el('span', null, '本月任务 / 月度目标'));
+  head.appendChild(el('small', null, 'MONTHLY'));
+  box.appendChild(head);
+
+  const body = el('div', 'month-body');
+  const cfg  = getLayoutConfig();
+  body.style.gridTemplateColumns = cfg.template;
+
+  for (let i = 0; i < cfg.cols; i++) {
+    const key = `${mKey}#${i}`;
+    const ta  = makeArea(
+      getMonthlySlot(mKey, i),
+      key,
+      'monthly',
+      v => setMonthlySlot(mKey, i, v)
+    );
+    if (state.layout.bg === 'blank') ta.classList.add('bg-blank');
+    body.appendChild(ta);
+  }
+
+  box.appendChild(body);
+  return box;
+}
+
 function renderWeek(weekStart, year, month) {
   const row = el('div', 'week');
 
-  /* 7 天 */
   for (let i = 0; i < 7; i++) {
-    const date = addDays(weekStart, i);
-    row.appendChild(renderDay(date, year, month));
+    row.appendChild(renderDay(addDays(weekStart, i), year, month));
   }
 
   /* 每周任务 */
   const wKey = dateKey(weekStart);
-  const wt = el('div', 'weektask');
+  const wt   = el('div', 'weektask');
 
   const wh = el('div', 'w-head');
   wh.appendChild(el('span', null, '本周任务'));
-  const wkEnd = addDays(weekStart, 6);
-  wh.appendChild(el('small', null, `${fmtShort(weekStart)} – ${fmtShort(wkEnd)}`));
+  wh.appendChild(el('small', null, `${fmtShort(weekStart)} – ${fmtShort(addDays(weekStart, 6))}`));
   wt.appendChild(wh);
 
-  const wArea = makeArea(
+  wt.appendChild(makeArea(
     state.data.weekly[wKey] || '',
     wKey,
     'weekly',
     v => { state.data.weekly[wKey] = v; }
-  );
-  wt.appendChild(wArea);
+  ));
 
   row.appendChild(wt);
   return row;
 }
 
 function renderDay(date, year, month) {
-  const isOther  = date.getMonth() !== month - 1 || date.getFullYear() !== year;
+  const isOther   = date.getMonth() !== month - 1 || date.getFullYear() !== year;
   const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-  const isToday  = isSameDay(date, new Date());
+  const isToday   = isSameDay(date, new Date());
 
   const cell = el('div', 'day');
   if (isWeekend) cell.classList.add('wknd');
   if (isOther)   cell.classList.add('off');
   if (isToday)   cell.classList.add('today');
 
-  /* 头部 */
   const head = el('div', 'd-head');
   head.appendChild(el('span', 'd-num', `${date.getMonth()+1}/${date.getDate()}`));
   head.appendChild(el('span', 'd-dow', DOW_NAMES[(date.getDay()+6)%7]));
   cell.appendChild(head);
 
-  /* 每日输入 */
   const k = dateKey(date);
-  const ta = makeArea(
+  cell.appendChild(makeArea(
     state.data.daily[k] || '',
     k,
     'daily',
     v => { state.data.daily[k] = v; }
-  );
-  cell.appendChild(ta);
+  ));
 
   return cell;
 }
 
 /* ============================================================
-   按钮操作
+   保存 / 清空
    ============================================================ */
+function snapshot() {
+  return JSON.stringify({ data: state.data, layout: state.layout });
+}
+
 function doSave() {
   persistData();
-  state.savedSnapshot = JSON.stringify(state.data);
+  state.savedSnapshot = snapshot();
   state.dirty = false;
   updateStatus();
 
-  /* 轻提示 */
   const btn = $('#btnSave');
   const old = btn.textContent;
   btn.textContent = '✓ 已保存';
@@ -634,7 +778,14 @@ function clearSession() {
   if (state.dirty) {
     if (!confirm('确定要丢弃未保存的修改，恢复到上次保存的状态吗？')) return;
   }
-  state.data = JSON.parse(state.savedSnapshot || '{"daily":{},"weekly":{},"monthly":{}}');
+  if (state.savedSnapshot) {
+    const s = JSON.parse(state.savedSnapshot);
+    state.data   = s.data;
+    state.layout = s.layout;
+    syncLayoutControls();
+  } else {
+    state.data = { daily:{}, weekly:{}, monthly:{} };
+  }
   state.dirty = false;
   render();
   updateStatus();
@@ -644,27 +795,42 @@ function clearAll() {
   if (!confirm('确定要清空全部填写内容吗？\n\n此操作会删除浏览器中保存的所有任务数据，且不可恢复。')) return;
   state.data = { daily:{}, weekly:{}, monthly:{} };
   localStorage.removeItem(STORAGE_KEY);
-  state.savedSnapshot = JSON.stringify(state.data);
+  state.savedSnapshot = snapshot();
   state.dirty = false;
   render();
   updateStatus();
 }
 
 /* ============================================================
-   事件绑定
+   控件同步
+   ============================================================ */
+function syncLayoutControls() {
+  $('#monthlyBg').value     = state.layout.bg;
+  $('#monthlyLayout').value = state.layout.mode;
+  $('#equalCount').value    = state.layout.equalCount;
+  $('#ratioA').value        = state.layout.ratioA;
+  $('#ratioB').value        = state.layout.ratioB;
+
+  $('#equalCountWrap').style.display = state.layout.mode === 'equal' ? '' : 'none';
+  $('#ratioWrap').style.display      = state.layout.mode === 'ratio' ? '' : 'none';
+}
+
+/* ============================================================
+   事件
    ============================================================ */
 function bindEvents() {
-  /* 起始月份 */
+
+  /* --- 起始月份 --- */
   $('#startMonth').addEventListener('change', e => {
     const v = e.target.value;
     if (!v) return;
     const [y, m] = v.split('-').map(Number);
-    state.startYear = y;
+    state.startYear  = y;
     state.startMonth = m;
     render();
   });
 
-  /* 显示月数 */
+  /* --- 显示月数 --- */
   $('#numMonths').addEventListener('change', e => {
     let n = parseInt(e.target.value, 10) || 1;
     n = Math.max(1, Math.min(24, n));
@@ -673,25 +839,67 @@ function bindEvents() {
     render();
   });
 
-  /* 连续滚动 */
+  /* --- 连续滚动 --- */
   $('#continuous').addEventListener('change', e => {
     state.continuous = e.target.checked;
     render();
   });
 
-  /* 合并周 */
+  /* --- 合并周 --- */
   $('#mergeMode').addEventListener('change', e => {
     state.mergeMode = e.target.checked;
     render();
   });
 
-  /* 按钮 */
+  /* --- 月度目标背景 --- */
+  $('#monthlyBg').addEventListener('change', e => {
+    state.layout.bg = e.target.value;
+    markDirty();
+    render();
+  });
+
+  /* --- 月度目标分栏 --- */
+  $('#monthlyLayout').addEventListener('change', e => {
+    state.layout.mode = e.target.value;
+    syncLayoutControls();
+    markDirty();
+    render();
+  });
+
+  $('#equalCount').addEventListener('change', e => {
+    let n = parseInt(e.target.value, 10) || 2;
+    n = Math.max(1, Math.min(6, n));
+    e.target.value = n;
+    state.layout.equalCount = n;
+    markDirty();
+    render();
+  });
+
+  $('#ratioA').addEventListener('change', e => {
+    let n = parseInt(e.target.value, 10) || 1;
+    n = Math.max(1, Math.min(9, n));
+    e.target.value = n;
+    state.layout.ratioA = n;
+    markDirty();
+    render();
+  });
+
+  $('#ratioB').addEventListener('change', e => {
+    let n = parseInt(e.target.value, 10) || 1;
+    n = Math.max(1, Math.min(9, n));
+    e.target.value = n;
+    state.layout.ratioB = n;
+    markDirty();
+    render();
+  });
+
+  /* --- 按钮 --- */
   $('#btnSave').addEventListener('click', doSave);
   $('#btnClearSession').addEventListener('click', clearSession);
   $('#btnClearAll').addEventListener('click', clearAll);
   $('#btnPrint').addEventListener('click', () => window.print());
 
-  /* Ctrl / Cmd + S 保存 */
+  /* --- Ctrl / Cmd + S --- */
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
@@ -699,12 +907,19 @@ function bindEvents() {
     }
   });
 
-  /* 离开前提醒 */
+  /* --- 离开前提醒 --- */
   window.addEventListener('beforeunload', e => {
     if (state.dirty) {
       e.preventDefault();
       e.returnValue = '';
     }
+  });
+
+  /* --- 窗口尺寸变化，重新测量月度高度 --- */
+  let rzT = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(rzT);
+    rzT = setTimeout(fitMonthlyHeights, 120);
   });
 }
 
@@ -712,20 +927,32 @@ function bindEvents() {
    初始化
    ============================================================ */
 function init() {
-  const loaded = loadData();
-  state.data = loaded;
-  state.savedSnapshot = JSON.stringify(loaded);
+  const saved = loadAll();
+
+  if (saved) {
+    state.data   = { daily: saved.daily, weekly: saved.weekly, monthly: saved.monthly };
+    state.layout = saved.layout;
+  }
+
+  state.savedSnapshot = snapshot();
   state.dirty = false;
 
+  /* 默认显示当前月 */
   const now = new Date();
-  state.startYear = now.getFullYear();
+  state.startYear  = now.getFullYear();
   state.startMonth = now.getMonth() + 1;
   $('#startMonth').value = `${state.startYear}-${pad2(state.startMonth)}`;
-  $('#numMonths').value = 1;
+  $('#numMonths').value  = 1;
 
+  syncLayoutControls();
   bindEvents();
   render();
-  updateStatus();
+
+  /* 字体加载完成后再次测量 */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fitMonthlyHeights);
+  }
+  window.addEventListener('load', fitMonthlyHeights);
 }
 
 init();
