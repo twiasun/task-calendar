@@ -88,6 +88,12 @@ body{
 .toolbar button.primary:hover{background:#245a94;}
 .toolbar button.danger{color:#b91c1c;border-color:#fecaca;}
 .toolbar button.danger:hover{background:#fef2f2;}
+/* 加粗 / 斜体按钮（v5 丢失，这里恢复） */
+.toolbar button.fmt{
+  width:32px;padding:4px 0;text-align:center;font-weight:700;
+  border-radius:7px;
+}
+.toolbar button.fmt.italic{font-style:italic;font-weight:500;}
 .toolbar .status{font-size:11px;color:#94a3b8;min-width:100px;text-align:right;}
 .toolbar .status.dirty{color:#c2410c;font-weight:600;}
 .toolbar .hint{font-size:10.5px;color:#b0bccb;}
@@ -455,6 +461,10 @@ body{
         <option value="12">超大 12pt</option>
       </select>
     </label>
+    <!-- 恢复：加粗 / 斜体 -->
+    <button type="button" id="btnBold" class="fmt" title="加粗（选中文字后按 Ctrl+B）">B</button>
+    <button type="button" id="btnItalic" class="fmt italic" title="斜体（选中文字后按 Ctrl+I）">I</button>
+    <span class="hint">选中文字后 Ctrl+B / Ctrl+I</span>
   </div>
 
   <!-- 操作 -->
@@ -1218,6 +1228,27 @@ function applyLocalFontSize(pt) {
 }
 
 /* ============================================================
+   加粗 / 斜体：同步数据
+   —— 修复：v5 丢失了这个函数，导致按钮/快捷键后数据不落库
+   ============================================================ */
+function triggerAreaInput() {
+  /* 1) 焦点在 .area 上，直接派发 */
+  const active = document.activeElement;
+  if (active && active.classList && active.classList.contains('area')) {
+    active.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+  /* 2) 焦点不在（例如点了工具栏按钮），用当前选区定位 */
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount) {
+    let node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    const area = node.closest ? node.closest('.area') : null;
+    if (area) area.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+
+/* ============================================================
    保存 / 清空
    ============================================================ */
 function doSave() {
@@ -1433,6 +1464,29 @@ function bindEvents() {
     if (!v) return;
     applyLocalFontSize(v);
     e.target.value = '';
+  });
+
+  /* ===== 加粗 / 斜体按钮（恢复） ===== */
+  $('#btnBold').addEventListener('mousedown', e => {
+    e.preventDefault();                 // 保住选区，避免焦点被按钮抢走
+    document.execCommand('bold');
+    triggerAreaInput();
+  });
+  $('#btnItalic').addEventListener('mousedown', e => {
+    e.preventDefault();
+    document.execCommand('italic');
+    triggerAreaInput();
+  });
+
+  /* 快捷键 Ctrl+B / Ctrl+I：浏览器默认已执行，这里补一次 input 同步 */
+  document.addEventListener('keydown', e => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = (e.key || '').toLowerCase();
+    if (k !== 'b' && k !== 'i') return;
+    const active = document.activeElement;
+    if (active && active.classList && active.classList.contains('area')) {
+      setTimeout(triggerAreaInput, 0);
+    }
   });
 
   /* 操作按钮 */
