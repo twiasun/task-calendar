@@ -37,7 +37,7 @@ body{
   gap:6px 0;
   align-items:center;
   font-size:12px;
-  max-height:130px;
+  max-height:150px;
   overflow-y:auto;
 }
 .tb-group{
@@ -160,6 +160,62 @@ body{
 .month-body.show-lines .area:not(:first-child){
   border-left:1px solid #c3d4e8;
 }
+
+/* ========== 按月设置条 ========== */
+.month-settings{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 9px;
+  align-items:center;
+  padding:3px 8px;
+  background:#f8fbff;
+  border-bottom:.5pt solid #dbe6f3;
+  font-size:10px;
+  color:#475569;
+}
+.month-settings .ms-label{
+  font-weight:700;
+  color:#2b6cb0;
+  font-size:10px;
+  white-space:nowrap;
+  letter-spacing:.2px;
+}
+.month-settings label{
+  display:flex;
+  align-items:center;
+  gap:3px;
+  white-space:nowrap;
+}
+.month-settings select,
+.month-settings input[type="number"]{
+  font:inherit;
+  font-size:10px;
+  padding:1px 4px;
+  border:1px solid #cfd8e3;
+  border-radius:4px;
+  background:#fff;
+  height:18px;
+  box-sizing:border-box;
+  color:#1f2937;
+}
+.month-settings input[type="number"]{width:36px;}
+.month-settings input[type="checkbox"]{
+  width:12px;height:12px;accent-color:#2b6cb0;cursor:pointer;
+}
+.month-settings button{
+  font:inherit;
+  font-size:10px;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid #cfd8e3;
+  background:#fff;
+  color:#2b6cb0;
+  cursor:pointer;
+  height:18px;
+  box-sizing:border-box;
+  margin-left:auto;
+}
+.month-settings button:hover{background:#eef6ff;}
 
 /* ========== 输入区（contenteditable） ========== */
 .area{
@@ -333,9 +389,10 @@ body{
     <label><input type="checkbox" id="mergeMode"> 合并周</label>
   </div>
 
-  <!-- 月度目标 -->
+  <!-- 月度目标（全局默认） -->
   <div class="tb-group">
     <span class="tb-title">月度目标</span>
+    <label><input type="checkbox" id="monthlyCustom"> 按月自定义</label>
     <label>背景
       <select id="monthlyBg">
         <option value="lines">横线</option>
@@ -445,7 +502,7 @@ body{
 /* ============================================================
    常量
    ============================================================ */
-const STORAGE_KEY = 'taskCalendar_v6';
+const STORAGE_KEY = 'taskCalendar_v7';
 const DOW_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
 
 const DEFAULT_STACK = '"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif';
@@ -456,13 +513,14 @@ const DEFAULT_LAYOUT = {
   ratioA: 1,
   ratioB: 1,
   bg: 'lines',                     // lines | blank
+  monthlyCustom: false,            // 按月自定义
   monthlyDynamicHeight: true,      // 月度目标动态高度
   dailyDynamicHeight: false,       // 每日目标动态高度
   showColLines: false,             // 分栏竖线
   fontScope: 'global',             // global | ui | input
-  fontCN: '',                      // 中文字体
-  fontEN: '',                      // 英文字体
-  fontScale: 100,                  // 全局字号缩放（%）
+  fontCN: '',
+  fontEN: '',
+  fontScale: 100,
 };
 
 /* ============================================================
@@ -476,6 +534,7 @@ const state = {
   mergeMode: false,
   data: { daily:{}, weekly:{}, monthly:{} },
   layout: Object.assign({}, DEFAULT_LAYOUT),
+  monthlyOverrides: {},            // { '2026-12': { bg, mode, ... } }
   savedSnapshot: null,
   dirty: false,
 };
@@ -521,17 +580,56 @@ function fmtShort(d) {
 }
 
 /* ============================================================
-   月度目标分栏配置
+   按月自定义：有效配置
    ============================================================ */
-function getLayoutConfig() {
-  const L = state.layout;
-  if (L.mode === 'equal') {
-    const n = Math.max(1, Math.min(6, parseInt(L.equalCount, 10) || 2));
+function getEffectiveMonthlyLayout(mKey) {
+  const g = state.layout;
+
+  if (!g.monthlyCustom) {
+    return {
+      bg: g.bg,
+      mode: g.mode,
+      equalCount: g.equalCount,
+      ratioA: g.ratioA,
+      ratioB: g.ratioB,
+      showColLines: g.showColLines,
+      monthlyDynamicHeight: g.monthlyDynamicHeight,
+    };
+  }
+
+  const o = state.monthlyOverrides[mKey] || {};
+  const pick = k => (o[k] !== undefined ? o[k] : g[k]);
+  return {
+    bg: pick('bg'),
+    mode: pick('mode'),
+    equalCount: pick('equalCount'),
+    ratioA: pick('ratioA'),
+    ratioB: pick('ratioB'),
+    showColLines: pick('showColLines'),
+    monthlyDynamicHeight: pick('monthlyDynamicHeight'),
+  };
+}
+
+function setMonthlyOverride(mKey, field, value) {
+  if (!state.monthlyOverrides[mKey]) state.monthlyOverrides[mKey] = {};
+  state.monthlyOverrides[mKey][field] = value;
+}
+
+function clearMonthlyOverride(mKey) {
+  delete state.monthlyOverrides[mKey];
+}
+
+/* ============================================================
+   分栏布局计算
+   ============================================================ */
+function getLayoutConfigFrom(cfg) {
+  if (cfg.mode === 'equal') {
+    const n = Math.max(1, Math.min(6, parseInt(cfg.equalCount, 10) || 2));
     return { cols: n, template: `repeat(${n}, 1fr)` };
   }
-  if (L.mode === 'ratio') {
-    const a = Math.max(1, Math.min(9, parseInt(L.ratioA, 10) || 1));
-    const b = Math.max(1, Math.min(9, parseInt(L.ratioB, 10) || 1));
+  if (cfg.mode === 'ratio') {
+    const a = Math.max(1, Math.min(9, parseInt(cfg.ratioA, 10) || 1));
+    const b = Math.max(1, Math.min(9, parseInt(cfg.ratioB, 10) || 1));
     return { cols: 2, template: `${a}fr ${b}fr` };
   }
   return { cols: 1, template: '1fr' };
@@ -566,7 +664,6 @@ function loadAll() {
     if (!raw) return null;
     const d = JSON.parse(raw);
     const layout = Object.assign({}, DEFAULT_LAYOUT, d.layout || {});
-    /* 兼容旧字段 */
     if (d.layout && 'dynamicHeight' in d.layout && !('monthlyDynamicHeight' in d.layout)) {
       layout.monthlyDynamicHeight = !!d.layout.dynamicHeight;
     }
@@ -575,6 +672,7 @@ function loadAll() {
       weekly:  d.weekly  || {},
       monthly: d.monthly || {},
       layout:  layout,
+      monthlyOverrides: d.monthlyOverrides || {},
     };
   } catch (e) {
     return null;
@@ -586,10 +684,15 @@ function persistData() {
     weekly:  state.data.weekly,
     monthly: state.data.monthly,
     layout:  state.layout,
+    monthlyOverrides: state.monthlyOverrides,
   }));
 }
 function snapshot() {
-  return JSON.stringify({ data: state.data, layout: state.layout });
+  return JSON.stringify({
+    data: state.data,
+    layout: state.layout,
+    monthlyOverrides: state.monthlyOverrides,
+  });
 }
 
 /* ============================================================
@@ -698,8 +801,8 @@ function makeArea(value, key, type, onInput) {
     onInput(readEditable(elm));
     markDirty();
     syncSameKey(key, elm.innerHTML, elm);
-    if (type === 'monthly' && state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-    if (type === 'daily'   && state.layout.dailyDynamicHeight)   fitDailyHeights();
+    if (type === 'monthly') fitMonthlyHeights();
+    if (type === 'daily' && state.layout.dailyDynamicHeight) fitDailyHeights();
   });
 
   elm.addEventListener('keydown', e => {
@@ -725,7 +828,7 @@ function syncSameKey(key, html, excludeEl) {
 }
 
 /* ============================================================
-   动态高度：月度目标（1–3 行，全栏统一）
+   动态高度：月度目标（1–3 行）
    ============================================================ */
 function fitMonthlyHeights() {
   document.querySelectorAll('.month.dynamic').forEach(box => {
@@ -797,8 +900,8 @@ function fitDailyHeights() {
     areas.forEach(ta => {
       const cs   = getComputedStyle(ta);
       const lh   = parseFloat(cs.lineHeight) || 16;
-      const padT = parseFloat(cs.paddingTop) || 0;
-      const padB = parseFloat(cs.paddingBottom) || 0;
+      const padT = parseFloat(ta.paddingTop) || 0;
+      const padB = parseFloat(ta.paddingBottom) || 0;
       ta.style.height = (maxLines * lh + padT + padB) + 'px';
     });
   });
@@ -827,13 +930,15 @@ function render() {
     container.appendChild(renderMonth(d.getFullYear(), d.getMonth() + 1));
   }
 
-  if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-  if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+  fitMonthlyHeights();
+  if (state.layout.dailyDynamicHeight) fitDailyHeights();
   updateStatus();
 }
 
 function renderMonth(year, month) {
+  const mKey  = monthKey(year, month);
   const block = el('div', 'month-block ' + (state.continuous ? 'continuous' : 'page'));
+  block.dataset.mkey = mKey;
 
   /* 页眉 */
   const hd = el('div', 'hd');
@@ -864,23 +969,37 @@ function renderMonth(year, month) {
 }
 
 function renderMonthBox(year, month) {
-  const mKey = monthKey(year, month);
-  const box  = el('div', 'month ' + (state.layout.monthlyDynamicHeight ? 'dynamic' : 'fixed'));
+  const mKey    = monthKey(year, month);
+  const custom  = state.layout.monthlyCustom;
+  const eff     = getEffectiveMonthlyLayout(mKey);
+  const layoutCfg = getLayoutConfigFrom(eff);
 
+  const box = el('div', 'month ' + (eff.monthlyDynamicHeight ? 'dynamic' : 'fixed'));
+  box.dataset.mkey = mKey;
+
+  /* 头部 */
   const head = el('div', 'w-head');
-  head.appendChild(el('span', null, '本月任务 / 月度目标'));
+  const title = custom
+    ? `${year} 年 ${month} 月 · 月度目标`
+    : '本月任务 / 月度目标';
+  head.appendChild(el('span', null, title));
   head.appendChild(el('small', null, 'MONTHLY'));
   box.appendChild(head);
 
-  const body = el('div', 'month-body');
-  const cfg  = getLayoutConfig();
-  body.style.gridTemplateColumns = cfg.template;
+  /* 按月设置条 */
+  if (custom) {
+    box.appendChild(renderMonthlySettingsBar(year, month, mKey, eff));
+  }
 
-  if (state.layout.showColLines && cfg.cols > 1) {
+  /* 内容 */
+  const body = el('div', 'month-body');
+  body.style.gridTemplateColumns = layoutCfg.template;
+
+  if (eff.showColLines && layoutCfg.cols > 1) {
     body.classList.add('show-lines');
   }
 
-  for (let i = 0; i < cfg.cols; i++) {
+  for (let i = 0; i < layoutCfg.cols; i++) {
     const key = `${mKey}#${i}`;
     const ta  = makeArea(
       getMonthlySlot(mKey, i),
@@ -888,12 +1007,109 @@ function renderMonthBox(year, month) {
       'monthly',
       v => setMonthlySlot(mKey, i, v)
     );
-    if (state.layout.bg === 'blank') ta.classList.add('bg-blank');
+    if (eff.bg === 'blank') ta.classList.add('bg-blank');
     body.appendChild(ta);
   }
 
   box.appendChild(body);
   return box;
+}
+
+/* ============================================================
+   按月设置条
+   ============================================================ */
+function renderMonthlySettingsBar(year, month, mKey, eff) {
+  const bar = el('div', 'month-settings noprint');
+  bar.dataset.mkey = mKey;
+
+  /* 年月标签 */
+  bar.appendChild(el('span', 'ms-label', `${year}年${month}月`));
+
+  /* 背景 */
+  {
+    const lb = el('label');
+    lb.appendChild(document.createTextNode('背景'));
+    const sel = document.createElement('select');
+    sel.dataset.field = 'bg';
+    sel.innerHTML = '<option value="lines">横线</option><option value="blank">空白</option>';
+    sel.value = eff.bg;
+    lb.appendChild(sel);
+    bar.appendChild(lb);
+  }
+
+  /* 分栏 */
+  {
+    const lb = el('label');
+    lb.appendChild(document.createTextNode('分栏'));
+    const sel = document.createElement('select');
+    sel.dataset.field = 'mode';
+    sel.innerHTML = '<option value="single">单栏</option><option value="equal">等分</option><option value="ratio">非等分</option>';
+    sel.value = eff.mode;
+    lb.appendChild(sel);
+    bar.appendChild(lb);
+  }
+
+  /* 等分数 */
+  if (eff.mode === 'equal') {
+    const lb = el('label');
+    lb.appendChild(document.createTextNode('等分数'));
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.min = '1'; inp.max = '6';
+    inp.value = eff.equalCount;
+    inp.dataset.field = 'equalCount';
+    lb.appendChild(inp);
+    bar.appendChild(lb);
+  }
+
+  /* 比例 */
+  if (eff.mode === 'ratio') {
+    const lb = el('label');
+    lb.appendChild(document.createTextNode('比例'));
+    const a = document.createElement('input');
+    a.type = 'number'; a.min = '1'; a.max = '9';
+    a.value = eff.ratioA; a.dataset.field = 'ratioA';
+    const sep = document.createElement('span'); sep.textContent = ':';
+    const b = document.createElement('input');
+    b.type = 'number'; b.min = '1'; b.max = '9';
+    b.value = eff.ratioB; b.dataset.field = 'ratioB';
+    lb.appendChild(a);
+    lb.appendChild(sep);
+    lb.appendChild(b);
+    bar.appendChild(lb);
+  }
+
+  /* 竖线 */
+  if (eff.mode !== 'single') {
+    const lb = el('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!eff.showColLines;
+    cb.dataset.field = 'showColLines';
+    lb.appendChild(cb);
+    lb.appendChild(document.createTextNode('竖线'));
+    bar.appendChild(lb);
+  }
+
+  /* 动态高度 */
+  {
+    const lb = el('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!eff.monthlyDynamicHeight;
+    cb.dataset.field = 'monthlyDynamicHeight';
+    lb.appendChild(cb);
+    lb.appendChild(document.createTextNode('动态高度'));
+    bar.appendChild(lb);
+  }
+
+  /* 重置 */
+  const resetBtn = el('button', null, '重置');
+  resetBtn.type = 'button';
+  resetBtn.dataset.action = 'reset';
+  bar.appendChild(resetBtn);
+
+  return bar;
 }
 
 function renderWeek(weekStart, year, month) {
@@ -947,6 +1163,19 @@ function renderDay(date, year, month) {
   ));
 
   return cell;
+}
+
+/* ============================================================
+   局部重渲染某个
+   ============================================================ */
+function rerenderMonth(mKey) {
+  const [y, m] = mKey.split('-').map(Number);
+  const old = document.querySelector(`.month-block[data-mkey="${mKey}"]`);
+  if (!old) return;
+  const fresh = renderMonth(y, m);
+  old.replaceWith(fresh);
+  fitMonthlyHeights();
+  if (state.layout.dailyDynamicHeight) fitDailyHeights();
 }
 
 /* ============================================================
@@ -1011,6 +1240,7 @@ function clearSession() {
     const s = JSON.parse(state.savedSnapshot);
     state.data   = s.data;
     state.layout = s.layout;
+    state.monthlyOverrides = s.monthlyOverrides || {};
     syncLayoutControls();
     applyFonts();
   } else {
@@ -1024,6 +1254,7 @@ function clearSession() {
 function clearAll() {
   if (!confirm('确定要清空全部填写内容吗？\n\n此操作会删除浏览器中保存的所有任务数据，且不可恢复。')) return;
   state.data = { daily:{}, weekly:{}, monthly:{} };
+  state.monthlyOverrides = {};
   localStorage.removeItem(STORAGE_KEY);
   state.savedSnapshot = snapshot();
   state.dirty = false;
@@ -1037,11 +1268,12 @@ function clearAll() {
 function syncLayoutControls() {
   const L = state.layout;
 
-  $('#monthlyBg').value            = L.bg;
-  $('#monthlyLayout').value        = L.mode;
-  $('#equalCount').value           = L.equalCount;
-  $('#ratioA').value               = L.ratioA;
-  $('#ratioB').value               = L.ratioB;
+  $('#monthlyCustom').checked       = L.monthlyCustom;
+  $('#monthlyBg').value             = L.bg;
+  $('#monthlyLayout').value         = L.mode;
+  $('#equalCount').value            = L.equalCount;
+  $('#ratioA').value                = L.ratioA;
+  $('#ratioB').value                = L.ratioB;
   $('#monthlyDynamicHeight').checked = L.monthlyDynamicHeight;
   $('#dailyDynamicHeight').checked   = L.dailyDynamicHeight;
   $('#showColLines').checked         = L.showColLines;
@@ -1090,6 +1322,13 @@ function bindEvents() {
   /* 合并周 */
   $('#mergeMode').addEventListener('change', e => {
     state.mergeMode = e.target.checked;
+    render();
+  });
+
+  /* 按月自定义 */
+  $('#monthlyCustom').addEventListener('change', e => {
+    state.layout.monthlyCustom = e.target.checked;
+    markDirty();
     render();
   });
 
@@ -1165,15 +1404,15 @@ function bindEvents() {
     state.layout.fontCN = e.target.value;
     applyFonts();
     markDirty();
-    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+    fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight) fitDailyHeights();
   });
   $('#fontEN').addEventListener('input', e => {
     state.layout.fontEN = e.target.value;
     applyFonts();
     markDirty();
-    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+    fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight) fitDailyHeights();
   });
   $('#fontScale').addEventListener('change', e => {
     let n = parseInt(e.target.value, 10) || 100;
@@ -1183,8 +1422,8 @@ function bindEvents() {
     applyFonts();
     markDirty();
     setTimeout(() => {
-      if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-      if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+      fitMonthlyHeights();
+      if (state.layout.dailyDynamicHeight) fitDailyHeights();
     }, 30);
   });
 
@@ -1201,6 +1440,41 @@ function bindEvents() {
   $('#btnClearSession').addEventListener('click', clearSession);
   $('#btnClearAll').addEventListener('click', clearAll);
   $('#btnPrint').addEventListener('click', () => window.print());
+
+  /* ===== 按月设置条：统一委托 ===== */
+  document.addEventListener('change', e => {
+    const bar = e.target.closest && e.target.closest('.month-settings');
+    if (!bar) return;
+    const mKey  = bar.dataset.mkey;
+    const field = e.target.dataset.field;
+    if (!field) return;
+
+    let value;
+    if (e.target.type === 'checkbox') {
+      value = e.target.checked;
+    } else if (e.target.type === 'number') {
+      value = parseInt(e.target.value, 10);
+      if (isNaN(value)) value = 1;
+      if (field === 'equalCount') value = Math.max(1, Math.min(6, value));
+      if (field === 'ratioA' || field === 'ratioB') value = Math.max(1, Math.min(9, value));
+    } else {
+      value = e.target.value;
+    }
+
+    setMonthlyOverride(mKey, field, value);
+    markDirty();
+    rerenderMonth(mKey);
+  });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest && e.target.closest('.month-settings button[data-action="reset"]');
+    if (!btn) return;
+    const bar = btn.closest('.month-settings');
+    const mKey = bar.dataset.mkey;
+    clearMonthlyOverride(mKey);
+    markDirty();
+    rerenderMonth(mKey);
+  });
 
   /* Ctrl / Cmd + S */
   document.addEventListener('keydown', e => {
@@ -1223,15 +1497,15 @@ function bindEvents() {
   window.addEventListener('resize', () => {
     clearTimeout(rzT);
     rzT = setTimeout(() => {
-      if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-      if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+      fitMonthlyHeights();
+      if (state.layout.dailyDynamicHeight) fitDailyHeights();
     }, 120);
   });
 
   /* 打印前重算高度 */
   window.addEventListener('beforeprint', () => {
-    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+    fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight) fitDailyHeights();
   });
 }
 
@@ -1244,6 +1518,7 @@ function init() {
   if (saved) {
     state.data   = { daily: saved.daily, weekly: saved.weekly, monthly: saved.monthly };
     state.layout = saved.layout;
+    state.monthlyOverrides = saved.monthlyOverrides || {};
   }
 
   state.savedSnapshot = snapshot();
@@ -1261,16 +1536,15 @@ function init() {
   bindEvents();
   render();
 
-  /* 字体就绪后重新测量 */
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
-      if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-      if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+      fitMonthlyHeights();
+      if (state.layout.dailyDynamicHeight) fitDailyHeights();
     });
   }
   window.addEventListener('load', () => {
-    if (state.layout.monthlyDynamicHeight) fitMonthlyHeights();
-    if (state.layout.dailyDynamicHeight)   fitDailyHeights();
+    fitMonthlyHeights();
+    if (state.layout.dailyDynamicHeight) fitDailyHeights();
   });
 }
 
